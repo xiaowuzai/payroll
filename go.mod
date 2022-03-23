@@ -9,7 +9,11 @@ require (
 	xorm.io/xorm v1.2.5
 )
 
-require github.com/spf13/viper v1.10.1
+require (
+	github.com/go-sql-driver/mysql v1.6.0
+	github.com/google/wire v0.5.0
+	github.com/spf13/viper v1.10.1
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect

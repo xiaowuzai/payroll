@@ -27,6 +27,12 @@ type OrganizationSalary  struct {
 	EmployeeType int32 // 员工类型： 0: 公务员  1:事业 2: 企业
 }
 
+func NewOrganizationService(repo OrganizationRepo) *OrganizationService {
+	return &OrganizationService{
+		repo:repo,
+	}
+}
+
 func (os *OrganizationService) ListOrganization(ctx context.Context) (*Organization, error) {
 	orgs, err  := os.repo.ListOrganization(ctx)
 	if err != nil {

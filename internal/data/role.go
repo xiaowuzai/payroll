@@ -21,7 +21,7 @@ type roleRepo struct {
 	data *Data
 }
 
-func NewRoleRepo(ctx context.Context, data *Data) service.RoleRepo {
+func NewRoleRepo(data *Data) service.RoleRepo {
 	return &roleRepo{
 		data:data,
 	}
