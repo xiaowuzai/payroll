@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/xiaowuzai/payroll/internal/service"
+	"github.com/xiaowuzai/payroll/pkg/uuid"
 )
 
 var _ service.OrganizationRepo = (*organizationRepo)(nil)
@@ -23,18 +24,21 @@ const (
 	SalTypeRetire
 )
 
+type EmployeeType int32
+const (
+	EepTypeCivilServant EmployeeType = iota   // 公务员
+	EepTypePublic // 事业单位
+	EepTypeEnterprise // 企业单位
+)
+
 type Organization struct {
-	Id int
-	ParentId int
+	Id string
+	ParentId string
 	Name string
 	Type OrganizationType    // 0 单位、 1 工资表
 	Path string // .ParentId.Id
-}
-
-type OrganizationSalary  struct {
-	Id string   // OrganizationId
 	SalaryType SalaryType   // 0:工资 1:福利 2: 退休    工资类型
-	EmployeeType int32 // 员工类型： 0: 公务员  1:事业 2: 企业
+	EmployeeType EmployeeType // 员工类型： 0: 公务员  1:事业 2: 企业
 }
 
 type organizationRepo struct {
@@ -61,15 +65,17 @@ func (or *organizationRepo)ListOrganization(ctx context.Context)([]*service.Orga
 			Name: v.Name,
 			Type: int32(v.Type),   // 0 单位、 1 工资表
 			ParentId: v.ParentId,
+			SalaryType: int32(v.SalaryType),   // 0:工资 1:福利 2: 退休    工资类型
+			EmployeeType: int32(v.EmployeeType), // 员工类型： 0: 公务员  1:事业 2: 企业
 		})
 	}
 
 	return res, nil
 }
 
-func (or *organizationRepo)AddOrganization(ctx context.Context, sorg service.Organization) error {
+func (or *organizationRepo)AddOrganization(ctx context.Context, sorg *service.Organization) error {
 	var errParent = errors.New("父节点错误")
-	if sorg.ParentId == 0 {
+	if sorg.ParentId == "" {
 		return errParent
 	}
 
@@ -83,22 +89,24 @@ func (or *organizationRepo)AddOrganization(ctx context.Context, sorg service.Org
 	}
 
 	org := &Organization{
+		Id: uuid.CreateUUID(),
 		ParentId: sorg.ParentId,
-		Name:sorg.Name,
+		Name: sorg.Name,
 		Type:OrganizationType(sorg.Type),   // 0 单位、 1 工资表
+		SalaryType: SalaryType(sorg.SalaryType),
+		EmployeeType: EmployeeType(sorg.EmployeeType),
+	}
+	org.Path = parentOrg.Path+"."+ org.Id
 
-		//TODO: 没想好怎么处理
-		Path: parentOrg.Path,
+	err = or.insertOrganization(ctx, org)
+	if err != nil {
+		return err
 	}
 
-	if org.Type == OrgTypeSalaryTable {
-		orgSalary := &OrganizationSalary {
-			
-		}
-	}
+	return nil
 }
 
-func (or *organizationRepo)getOrganization(ctx context.Context, orgId int)(*Organization, error) {
+func (or *organizationRepo)getOrganization(ctx context.Context, orgId string)(*Organization, error) {
 	org := &Organization{}
 	has, err := or.data.db.ID(orgId).Get(org)
 	if err != nil {
@@ -110,6 +118,14 @@ func (or *organizationRepo)getOrganization(ctx context.Context, orgId int)(*Orga
 	return org, nil
 }
 
-func (or *organizationRepo)insertOrganizationSalary(ctx context.Context) {
-
+func (or *organizationRepo)insertOrganization(ctx context.Context, organization *Organization) error{
+	num, err := or.data.db.Insert(organization)
+	if err != nil {
+		return err
+	}
+	if num != 1 {
+		return errors.New("插入组织失败")
+	}
+	return nil
 }
+

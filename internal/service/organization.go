@@ -6,6 +6,7 @@ import (
 
 type OrganizationRepo interface {
 	ListOrganization(context.Context)([]*Organization, error)
+	AddOrganization(context.Context, *Organization) error
 }
 
 type OrganizationService struct {
@@ -13,18 +14,13 @@ type OrganizationService struct {
 }
 
 type Organization struct {
-	Id int
+	Id string
+	ParentId string
 	Name string
-	OrganizationSalary OrganizationSalary
-	Type int32    // 0 单位、 1 工资表
-	ParentId int
-	Children []*Organization
-}
-
-type OrganizationSalary  struct {
-	Id string   // OrganizationId
 	SalaryType int32   // 0:工资 1:福利 2: 退休    工资类型
 	EmployeeType int32 // 员工类型： 0: 公务员  1:事业 2: 企业
+	Type int32    // 0 单位、 1 工资表
+	Children []*Organization
 }
 
 func NewOrganizationService(repo OrganizationRepo) *OrganizationService {
@@ -39,9 +35,9 @@ func (os *OrganizationService) ListOrganization(ctx context.Context) (*Organizat
 		return nil, err
 	}
 
-	orgMap := make(map[int][]*Organization, len(orgs))
+	orgMap := make(map[string][]*Organization, len(orgs))
 	var root *Organization
-	var rootParent  = 0
+	var rootParent  = ""
 
 	for _, org := range orgs {
 		org := org
@@ -57,7 +53,7 @@ func (os *OrganizationService) ListOrganization(ctx context.Context) (*Organizat
 	return root, nil
 }
 
-func buildTree(node *Organization, orgMap map[int][]*Organization){
+func buildTree(node *Organization, orgMap map[string][]*Organization){
 	if node == nil || orgMap == nil || len(orgMap) == 0{
 		return
 	}
@@ -74,6 +70,10 @@ func buildTree(node *Organization, orgMap map[int][]*Organization){
 	}
 }
 
+
+func (os *OrganizationService) AddOrganization(ctx context.Context, organization *Organization) error{
+	return os.repo.AddOrganization(ctx, organization)
+}
 
 
 

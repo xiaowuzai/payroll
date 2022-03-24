@@ -44,3 +44,18 @@ func (rr *roleRepo)AddRole(ctx context.Context, bRole *service.Role) error {
 
 	return nil
 }
+
+func (rr *roleRepo)ListRole(ctx context.Context, userId string) ([]*service.Role, error) {
+
+}
+
+func (rr *roleRepo) listRole(ctx context.Context) ([]*Role, error) {
+	roles := make([]*Role, 0)
+	err := rr.data.db.Find(roles)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
+}
+
+func (rr *roleRepo)
