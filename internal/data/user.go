@@ -125,4 +125,8 @@ func (ur *userRepo)update(ctx context.Context, user *User) error{
 	return nil
 }
 
+// 判断是否为管理员
+func isAdmin(ctx context.Context) bool {
+	return false
+}
 

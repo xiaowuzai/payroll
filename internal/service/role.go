@@ -10,6 +10,8 @@ type RoleRepo interface {
 	AddRole(context.Context,string, *Role) error
 	// ctx,userId
 	ListRole(context.Context, string) ([]*Role,error)
+	// ctx, userId, roleId
+	GetRole(context.Context, string, string) (*Role, error)
 }
 
 type RoleService struct {
@@ -37,8 +39,10 @@ var (
 
 type Role struct {
 	Id string
+	Name string
 	Description string
-	Roles []string
+	MenuKey map[string]string  // menu keys : id
+	Menus []string  // menu ids
 	Created time.Time
 }
 
@@ -52,4 +56,8 @@ func (r *RoleService)AddRole(ctx context.Context,userId string, role *Role) erro
 
 func  (r *RoleService)ListRole(ctx context.Context, userId string) ([]*Role, error) {
 	return  r.repo.ListRole(ctx, userId)
+}
+
+func (r *RoleService) GetRole(ctx context.Context, userId, roleId string) (*Role, error) {
+	return r.repo.GetRole(ctx, userId, roleId)
 }

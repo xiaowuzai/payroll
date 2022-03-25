@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/spf13/viper v1.10.1

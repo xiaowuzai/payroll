@@ -34,7 +34,7 @@ type OrganizationSalary  struct {
 
 
 // GET
-func (r *OrganizationHandler) GetOrganization(c *gin.Context) {
+func (r *OrganizationHandler) ListOrganization(c *gin.Context) {
 	ctx := c.Request.Context()
 	orgs,err := r.org.ListOrganization(ctx)
 	if err != nil {

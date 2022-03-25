@@ -12,9 +12,11 @@ var _ service.RoleRepo = (*roleRepo)(nil)
 
 type Role struct {
 	Id string `xorm:"id"`
+	Name string `xorm:"name"`
 	Description string `xorm:"description"`
-	Roles string `xorm:"roles"`  //eg: key1.key2.key3
 	Created time.Time `xorm:"created"`
+	Updated time.Time `xorm:"updated"`
+	Deleted bool `xorm:"deleted"`
 }
 
 type roleRepo struct {
@@ -27,11 +29,11 @@ func NewRoleRepo(data *Data) service.RoleRepo {
 	}
 }
 
-func (rr *roleRepo)AddRole(ctx context.Context, bRole *service.Role) error {
+func (rr *roleRepo)AddRole(ctx context.Context, userId string, sRole *service.Role) error {
 	role := &Role{
 		Id: uuid.CreateUUID(),
-		Description: bRole.Description,
-		Roles: bRole.Roles,
+		Description: sRole.Description,
+		Name: sRole.Name,
 	}
 
 	n, err := rr.data.db.Insert(role)
@@ -42,11 +44,73 @@ func (rr *roleRepo)AddRole(ctx context.Context, bRole *service.Role) error {
 		return errors.New("insert data fail")
 	}
 
-	return nil
+	roleMenus := make([]*RoleMenu,0, len(sRole.Menus))
+	for _, v := range sRole.Menus {
+		roleMenus = append(roleMenus, &RoleMenu{
+			Id: uuid.CreateUUID(),
+			RoleId: role.Id,
+			MenuId: v,
+		})
+	}
+
+	return rr.insertRoleMenus(ctx, roleMenus)
 }
 
+// 获取角色列表
 func (rr *roleRepo)ListRole(ctx context.Context, userId string) ([]*service.Role, error) {
+	roles, err := rr.listRole(ctx)
+	if err != nil {
+		return nil, err
+	}
 
+	sRoles := make([]*service.Role, 0, len(roles))
+	for _, v :=  range roles {
+		sRoles = append(sRoles, &service.Role{
+			Id: v.Id,
+			Name:v.Name,
+			Description: v.Description,
+			Created: v.Created,
+		})
+	}
+	return sRoles, nil
+}
+
+
+func (rr *roleRepo) GetRole(ctx context.Context, userId, roleId string) (*service.Role, error) {
+	role, err := rr.getRole(ctx, roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取当前角色选择的 menuId
+	roleMenus, err := rr.listRoleMenuIds(ctx, roleId)
+	if err != nil {
+		return nil, err
+	}
+	menuIds := make([]string,0, len(roleMenus))
+	for _, v := range roleMenus {
+		menuIds = append(menuIds,v.MenuId)
+	}
+
+	// 获取所有 menus
+	menus, err := rr.listMenus(ctx)
+	if err != nil {
+		return nil, err
+	}
+	menusMap := make(map[string]string, len(menus))
+	for _, v := range menus {
+		menusMap[v.Keys] = v.Id
+	}
+
+	sRole := &service.Role{
+		Id: role.Id,
+		Name: role.Name,
+		Description: role.Description,
+		MenuKey: menusMap,
+		Menus: menuIds,
+		Created: role.Created,
+	}
+	return sRole, nil
 }
 
 func (rr *roleRepo) listRole(ctx context.Context) ([]*Role, error) {
@@ -58,4 +122,9 @@ func (rr *roleRepo) listRole(ctx context.Context) ([]*Role, error) {
 	return roles, nil
 }
 
-func (rr *roleRepo)
+func (rr *roleRepo)getRole(ctx context.Context, roleId string) (*Role, error) {
+	role :=  &Role{}
+	_, err := rr.data.db.ID(roleId).Get(role)
+	return role, err
+}
+
