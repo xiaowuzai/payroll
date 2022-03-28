@@ -15,3 +15,18 @@ func Success(c *gin.Context, obj interface{}) {
 	}
 	c.JSON(http.StatusOK, obj)
 }
+
+// 请求参数错误: 400
+func BadRequest(c *gin.Context, message string) {
+	Error(c, http.StatusBadRequest, message)
+}
+
+// 认证出错: 401
+func Unauthorized(c *gin.Context, message string) {
+	Error(c, http.StatusUnauthorized,message)
+}
+
+//系统内部错误: 500
+func InternalErr(c *gin.Context, message string) {
+	Error(c, http.StatusInternalServerError, message)
+}

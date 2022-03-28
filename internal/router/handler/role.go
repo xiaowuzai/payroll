@@ -21,18 +21,25 @@ func NewRoleHandler(role *service.RoleService) *RoleHandler{
 
 type Role struct {
 	Id string `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name" binding:"required"`
 	Description string `json:"description"`
 	MenuKeys map[string]string `json:"menu_key"`
-	Menus []string `json:"menus"`
+	Menus []string `json:"menus" binding:"required"`
 	Created time.Time `json:"created"`
 }
 
+// @Summary 添加角色
+// @Description 指定角色的菜单权限
+// @Tags 角色管理
+// @Accept application/json
+// @Param Role body Role true ""
+// @Success 200 {object} Role
+// @Router /v1/auth/role [post]
 func (r *RoleHandler) AddRole(c *gin.Context) {
 	role := &Role{}
 	err := c.ShouldBindJSON(role)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,err)
+		response.Error(c,http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -45,20 +52,26 @@ func (r *RoleHandler) AddRole(c *gin.Context) {
 		Menus: role.Menus,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest,err)
+		response.Error(c,http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK,nil)
+	response.Success(c,nil)
 }
 
+// @Summary 获取角色列表
+// @Description 根据用户权限获取角色列表
+// @Tags 角色管理
+// @Accept application/json
+// @Success 200 {object} []*Role
+// @Router /v1/auth/role [get]
 func (r *RoleHandler) ListRole(c *gin.Context) {
 	ctx := c.Request.Context()
 	userId := ""
 	sRoles, err := r.role.ListRole(ctx,userId)
 	if err != nil {
 		log.Printf("List Role error: %s\n", err)
-		c.JSON(http.StatusBadRequest, err)
+		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -72,7 +85,7 @@ func (r *RoleHandler) ListRole(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, roles)
+	response.Success(c, roles)
 }
 
 // @Summary 角色管理

@@ -17,15 +17,22 @@ func NewUserHandler(userService *service.UserService) *UserHandler{
 
 type User struct {
 	Id string `json:"id"`
-	Username string `json:"username"`
-	AccountName string `json:"accountName"`
+	Username string `json:"username" binding:"required"`
+	AccountName string `json:"accountName" binding:"required"`
 	Email string `json:"email"`
-	RoleId string `json:"roleId"`
-	Password string `json:"password"`
+	RoleId string `json:"roleId" binding:"required"`
+	Password string `json:"password" binding:"required"`
 	Status int32 `json:"status"`
 	Created uint64 `json:"created"`
 }
 
+// @Summary 添加用户
+// @Description 添加用户时指定角色
+// @Tags 用户管理
+// @Accept application/json
+// @Param User body User true ""
+// @Success 200 {object} response.Result ""
+// @Router /v1/auth/user [post]
 func (uh *UserHandler)AddUser(c *gin.Context) {
 	user :=  &User{}
 	err := c.ShouldBindJSON(user)
