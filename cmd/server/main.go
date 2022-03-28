@@ -13,18 +13,12 @@ func main(){
 	panicErr(err)
 	log.Println(dir)
 
-	vip.SetConfigFile("../../configs/server.yml")
+	vip.SetConfigFile("./configs/server.yml")
 	err = vip.ReadInConfig()
 	panicErr(err)
 
 	log.Println("configDatabase: ", vip.GetString("server.database.host"))
 	conf := parseConf(vip)
-	//db, err := data.NewData(conf.Database)
-	//panicErr(err)
-	//
-	//ge := gin.New()
-	//r := router.NewRouter()
-	//server := app.NewServer(ge,r)
 	server, err := InitServer(conf, conf.Database)
 	panicErr(err)
 	server.Start()
@@ -47,6 +41,7 @@ func parseConf(vip *viper.Viper) *config.Server {
 			Port:     vip.Get("server.database.port").(int),
 			Passwd:   vip.Get("server.database.passwd").(string),
 			Username: vip.Get("server.database.username").(string),
+			ShowSQL: vip.Get("server.database.showsql").(bool),
 		},
 	}
 }

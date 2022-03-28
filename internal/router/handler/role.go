@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/xiaowuzai/payroll/internal/router/handler/response"
 	"github.com/xiaowuzai/payroll/internal/service"
 	"log"
 	"net/http"
@@ -75,18 +75,26 @@ func (r *RoleHandler) ListRole(c *gin.Context) {
 	c.JSON(http.StatusOK, roles)
 }
 
+// @Summary 角色管理
+// @Description 获取某个角色信息
+// @Tags 角色管理
+// @Accept application/json
+// @Param id query string true "id"
+// @Success 200 {object} Role
+// @Router /v1/auth/role/{id} [get]
 func (r *RoleHandler) GetRole(c *gin.Context) {
-	roleId := c.Query("id")
-	if roleId == ""	{
-		c.JSON(http.StatusBadRequest, errors.New("role id is empty"))
+	roleId,has := c.Params.Get("id")
+	if roleId == "" || !has	{
+		response.Error(c, http.StatusBadRequest, "参数错误")
 		return
 	}
 
 	ctx := c.Request.Context()
 	userId :=  ""
-	sRole, err := r.role.GetRole(ctx,userId, roleId)
+	log.Println("roleId: ", roleId)
+	sRole, err := r.role.GetRole(ctx, userId, roleId)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, err)
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 

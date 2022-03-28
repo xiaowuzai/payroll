@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"time"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 const (
@@ -35,16 +35,16 @@ var (
 func JWTAuthMiddleware() gin.HandlerFunc{
 	return func(ctx *gin.Context) {
 		token := ctx.Request.Header.Get(authorization)
-		requestId := ctx.Request.Header.Get(RequestId)
-		if token == "" || requestId == "" {
-			ctx.JSON(http.StatusUnauthorized, ErrTokenExpired)
+		//requestId := ctx.Request.Header.Get(RequestId)
+		if token == "" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"message": ErrTokenExpired.Error()})
 			ctx.Abort()
 			return
 		}
 
 		authInfo, err := checkAuth(token)
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, ErrTokenExpired)
+			ctx.JSON(http.StatusUnauthorized, gin.H{"message": ErrTokenExpired.Error()})
 			ctx.Abort()
 			return
 		}
@@ -56,39 +56,44 @@ func JWTAuthMiddleware() gin.HandlerFunc{
 type AuthInfo struct{
 	UId string `json:"uid"`
 	Name string `json:"name"`
-	Privileges []string `json:"privileges"`
+	Menus []string `json:"privileges"`
 }
 
 
 //JWTMiddleware 注册
-type JWTMiddleware struct {
+type jwtMiddleware struct {
 	Timeout time.Duration
 	Issuer  string
-	*AuthInfo
+	AuthInfo *AuthInfo
 }
 
-func (jwtm *JWTMiddleware) GenerateToken() (string, error){
-	jwtm.checkArgs()
-	claims := jwtm.newClaims()
+func newJWTMiddleware(authInfo *AuthInfo, timeout time.Duration) *jwtMiddleware{
+	if timeout == 0 {
+		timeout = defaultTimeout
+	}
+	return &jwtMiddleware{
+		Timeout: timeout,
+		Issuer: defaultIssuer,
+		AuthInfo: authInfo,
+	}
+}
+
+func GenerateToken(info *AuthInfo) (string, error){
+	return generateToken(info, defaultTimeout)
+}
+func generateToken(info *AuthInfo,timeout time.Duration) (string, error){
+	jwtM := newJWTMiddleware(info, timeout)
+	claims := jwtM.newClaims()
 	return claims.genToken()
 }
 
-func (jwtm *JWTMiddleware)newClaims() *Claims {
+func (jwtM *jwtMiddleware)newClaims() *Claims {
 	return &Claims{
-		jwtm.AuthInfo,
+		jwtM.AuthInfo,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(jwtm.Timeout).Unix(),
-			Issuer:   jwtm.Issuer,
+			ExpiresAt: time.Now().UTC().Add(jwtM.Timeout).Unix(),
+			Issuer:   jwtM.Issuer,
 		},
-	}
-}
-
-func (jwtm *JWTMiddleware)checkArgs() {
-	if jwtm.Timeout <= 0 {
-		jwtm.Timeout = defaultTimeout
-	}
-	if jwtm.Issuer == "" {
-		jwtm.Issuer = defaultIssuer
 	}
 }
 
@@ -160,4 +165,8 @@ func checkAuth(authorization string)(*AuthInfo, error) {
 
 func setAuthKey(c *gin.Context, value interface{}) {
 	c.Set(AuthKey, value)
+}
+
+func GenerateRefreshToken(authInfo *AuthInfo) (string, error) {
+	return generateToken(authInfo, time.Hour * 72)
 }

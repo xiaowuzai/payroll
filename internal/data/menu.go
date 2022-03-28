@@ -21,22 +21,24 @@ type RoleMenu struct {
 	Updated time.Time `xorm:"updated"`
 }
 
-func (rr *roleRepo) insertRoleMenus(ctx context.Context, roleMenus []*RoleMenu) error {
-	_, err := rr.data.db.Insert(&roleMenus)
+func (data *Data) insertRoleMenus(ctx context.Context, roleMenus []*RoleMenu) error {
+	_, err := data.db.Insert(&roleMenus)
 	return err
 }
 
-func (rr *roleRepo) listRoleMenuIds(ctx context.Context, roleId string) ([]*RoleMenu, error){
+// 获取 role 对应的菜单列表
+func ( data *Data)listRoleMenuIds(ctx context.Context, roleId string) ([]*RoleMenu, error){
 	roleMenus := make([]*RoleMenu, 0)
-	err := rr.data.db.Where("role_id = ?", roleId).Find(roleMenus)
+	err := data.db.Where("role_id = ?", roleId).Find(&roleMenus)
 	if err != nil {
 		return nil, err
 	}
 	return roleMenus, nil
 }
 
-func (rr *roleRepo)listMenus(ctx context.Context) ([]*Menu, error) {
+// 获取所有的菜单列表
+func (data *Data)listMenus(ctx context.Context) ([]*Menu, error) {
 	menus := make([]*Menu,0)
-	err := rr.data.db.Find(&menus)
+	err := data.db.Find(&menus)
 	return menus, err
 }

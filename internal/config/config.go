@@ -12,4 +12,5 @@ type Database struct {
 	Username string `yaml:"username"`
 	Passwd string `yaml:"passwd"`
 	Port int`yaml:"port"`
+	ShowSQL bool `yaml:"showsql"`
 }

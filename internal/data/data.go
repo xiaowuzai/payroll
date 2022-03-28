@@ -9,7 +9,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewRoleRepo, NewOrganizationRepo,NewUserRepo)
+var ProviderSet = wire.NewSet(NewData, NewRoleRepo, NewOrganizationRepo, NewUserRepo)
 
 type Data struct {
 	db *xorm.Engine
@@ -18,6 +18,7 @@ type Data struct {
 func NewData(conf *config.Database) (*Data, error) {
 	source := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", conf.Username, conf.Passwd, conf.Host, conf.Port, "payroll")
 	engine, err := xorm.NewEngine("mysql", source)
+	engine.ShowSQL(conf.ShowSQL)
 	if err != nil {
 		return nil, err
 	}

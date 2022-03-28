@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha1"
 	"errors"
@@ -29,10 +30,10 @@ func NewUserRepo(data *Data) service.UserRepo {
 
 type User struct {
 	Id string `xorm:"id pk varchar(36) notnull "`
-	Username string `xorm:"username varchar(45) unique 'username_unique'"` // 用户名
-	AccountName string `xorm:"account_name varchar(20) unique 'account_name_unique'"`
+	Username string `xorm:"username varchar(45) unique "` // 用户名
+	AccountName string `xorm:"account_name varchar(20) unique "` // 用户帐号，用于登录
 	Email string `xorm:"email"`
-	RoleId string `xorm:"role"` // Role.Id
+	RoleId string `xorm:"role_id"` // Role.Id
 	Password []byte `xorm:"password"`  // default: 123456
 	Salt []byte `xorm:"salt"`
 	Status int32 `xorm:"status"`  // 0 正常、1 禁用
@@ -42,18 +43,9 @@ type User struct {
 
 const defaultPasswd = "123456"
 
-func addSalt(password string) ([]byte, []byte) {
-	salt := uuid.CreatUUIDBinary()
-	sm := append([]byte(password), salt...)
-	h := sha1.New()
-	h.Write([]byte(sm))
-	return h.Sum(nil), salt
-}
 
 func (ur *userRepo)AddUser(ctx context.Context, user *service.User) error {
-
 	passwd, salt := addSalt(user.Password)
-
 	u := &User{
 		Id : uuid.CreateUUID(),
 		Username: user.Username,
@@ -72,15 +64,9 @@ func (ur *userRepo)AddUser(ctx context.Context, user *service.User) error {
 	return nil
 }
 
-func (ur *userRepo)insert(ctx context.Context, user *User) error {
-	_, err :=  ur.data.db.Insert(user)
-	return err
-}
-
-
 func (ur *userRepo)ChangePasswd(ctx context.Context, userId, ownerId, newPasswd string) error {
 	// 检查是不是管理员
-	user, err := ur.getUser(ctx, userId)
+	user, err := ur.getUser(ctx, userId, "")
 	if err != nil {
 		return err
 	}
@@ -91,14 +77,50 @@ func (ur *userRepo)ChangePasswd(ctx context.Context, userId, ownerId, newPasswd 
 	return ur.changePasswd(ctx, ownerId, newPasswd)
 }
 
-func (ur *userRepo)getUser(ctx context.Context, userId string) (*User, error) {
+// 认证成功，返回 menu Ids
+func (ur *userRepo) Login(ctx context.Context, accountName, passwd string) (*service.User, []string, error) {
+	user, err := ur.getUser(ctx,"", accountName)
+	if err != nil {
+		return nil,nil, err
+	}
+
+	if !validateUserPassword(append([]byte(passwd), user.Salt...), user.Password) {
+		return nil, nil, errors.New("密码错误")
+	}
+
+	menuIds, err := ur.getMenus(ctx, user)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	sUser := &service.User{
+		Id: user.Id,
+		Username: user.Username,
+		AccountName: user.AccountName,
+		Created: user.Created,
+	}
+
+	return sUser, menuIds, nil
+}
+
+// userId 和 username 取交集。
+func (ur *userRepo)getUser(ctx context.Context, userId string, accountName string) (*User, error) {
 	u := &User{}
-	has, err := ur.data.db.ID(userId).Get(u)
+
+	session := ur.data.db.NewSession()
+	if userId != ""  {
+		session = session.ID(userId)
+	}
+	if accountName != "" {
+		session = session.Where("account_name = ?", accountName)
+	}
+	has, err := session.Get(u)
 	if err != nil {
 		return nil, err
 	}
 	if !has {
 		log.Printf("userId: %s not exist\n", userId)
+		return nil, errors.New("用户不存在")
 	}
 	return u, nil
 }
@@ -130,3 +152,25 @@ func isAdmin(ctx context.Context) bool {
 	return false
 }
 
+func (ur *userRepo)insert(ctx context.Context, user *User) error {
+	_, err :=  ur.data.db.Insert(user)
+	return err
+}
+
+
+func addSalt(password string) ([]byte, []byte) {
+	salt := uuid.CreatUUIDBinary()
+	sm := append([]byte(password), salt...)
+	h := sha1.New()
+	h.Write([]byte(sm))
+	return h.Sum(nil), salt
+}
+
+func validateUserPassword(sumPwd []byte, password []byte) bool {
+	h := sha1.New()
+	h.Write(sumPwd)
+	if bytes.Compare(h.Sum(nil), password) != 0 {
+		return false
+	}
+	return true
+}

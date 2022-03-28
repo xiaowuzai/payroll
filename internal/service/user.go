@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"github.com/xiaowuzai/payroll/internal/pkg/middleware"
 	"time"
 )
 
 type UserRepo interface {
 	AddUser(context.Context, *User)	error
 	ChangePasswd(context.Context, string, string, string) error
+	Login(context.Context, string, string) (*User, []string, error)
 }
 
 type UserService struct {
@@ -33,4 +35,28 @@ type User struct{
 
 func (us *UserService) AddUser (ctx context.Context, user *User) error{
 	return us.repo.AddUser(ctx, user)
+}
+
+func (us *UserService) Login(ctx context.Context, accountName, passwd string)(string, string, error)  {
+	user, menuIds, err := us.repo.Login(ctx, accountName, passwd)
+	if err != nil {
+		return "", "", err
+	}
+
+	authInfo := &middleware.AuthInfo{
+		UId :user.Id,
+		Name :user.Username,
+		Menus: menuIds,
+	}
+
+	token, err := middleware.GenerateToken(authInfo)
+	if err != nil {
+		return "" , "", err
+	}
+	refresh, err := middleware.GenerateRefreshToken(authInfo)
+	if err != nil {
+		return "" , "", err
+	}
+
+	return token,refresh, nil
 }

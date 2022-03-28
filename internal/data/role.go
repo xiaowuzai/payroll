@@ -11,12 +11,12 @@ import (
 var _ service.RoleRepo = (*roleRepo)(nil)
 
 type Role struct {
-	Id string `xorm:"id"`
+	Id string `xorm:"id pk"`
 	Name string `xorm:"name"`
 	Description string `xorm:"description"`
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`
-	Deleted bool `xorm:"deleted"`
+	Deleted bool `xorm:"default false"`
 }
 
 type roleRepo struct {
@@ -53,7 +53,7 @@ func (rr *roleRepo)AddRole(ctx context.Context, userId string, sRole *service.Ro
 		})
 	}
 
-	return rr.insertRoleMenus(ctx, roleMenus)
+	return rr.data.insertRoleMenus(ctx, roleMenus)
 }
 
 // 获取角色列表
@@ -83,7 +83,7 @@ func (rr *roleRepo) GetRole(ctx context.Context, userId, roleId string) (*servic
 	}
 
 	// 获取当前角色选择的 menuId
-	roleMenus, err := rr.listRoleMenuIds(ctx, roleId)
+	roleMenus, err := rr.data.listRoleMenuIds(ctx, roleId)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (rr *roleRepo) GetRole(ctx context.Context, userId, roleId string) (*servic
 	}
 
 	// 获取所有 menus
-	menus, err := rr.listMenus(ctx)
+	menus, err := rr.data.listMenus(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (rr *roleRepo) GetRole(ctx context.Context, userId, roleId string) (*servic
 
 func (rr *roleRepo) listRole(ctx context.Context) ([]*Role, error) {
 	roles := make([]*Role, 0)
-	err := rr.data.db.Find(roles)
+	err := rr.data.db.Find(&roles)
 	if err != nil {
 		return nil, err
 	}

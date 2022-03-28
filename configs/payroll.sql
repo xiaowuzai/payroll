@@ -34,13 +34,13 @@ INSERT INTO menu VALUES
     ('67b18bdb-dadf-4a0d-b6fb-95cfe360e21a','salary-statistics', '工资统计', NOW(), NOW()),
     ('6d2b6450-6cd3-4956-ab55-c18c400bb036','cost-statistics', '成本统计', NOW(), NOW()),
     ('7497609c-8fba-4c33-8bdd-bbc443865b73','project-cost-statistic', '项目费用统计', NOW(), NOW()),
-    ('7fad0844-4563-408c-a269-e3a2d401ae88','system-config', '系统设置'), NOW(), NOW(),
+    ('7fad0844-4563-408c-a269-e3a2d401ae88','system-config', '系统设置', NOW(), NOW()),
     ('8668919e-1112-49cc-8ae0-74808cb9e9cc','user-management', '用户管理', NOW(), NOW()),
-    ('6d7fe0fb-4b98-450b-8e48-aac8a5809370','role-management', '角色管理', NOW(), NOW()),
-    ('67b18bdb-dadf-4a0d-b6fb-95cfe360e21a','organization', '组织机构', NOW(), NOW()),
+    ('8d7fe0fb-4b98-450b-8e48-aac8a5809370','role-management', '角色管理', NOW(), NOW()),
+    ('76b18bdb-dadf-4a0d-b6fb-95cfe360e21a','organization', '组织机构', NOW(), NOW()),
     ('6d7fe0fb-4b98-450b-8e48-aac8a5809370','staff-management', '员工管理', NOW(), NOW());
 
-DROP TABLE IF EXISTS `role_menu`
+DROP TABLE IF EXISTS `role_menu`;
 CREATE TABLE `role_menu`(
    `id` varchar(36) NOT NULL,
    `role_id` varchar(36) NOT NULL,
@@ -61,14 +61,14 @@ INSERT INTO role_menu VALUES
     ('e3488d80-b05c-442d-8feb-94c2eadebc46','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','67b18bdb-dadf-4a0d-b6fb-95cfe360e21a',NOW(), NOW()),
     ('d86b6b91-60bf-42b6-a846-b1831baa0344','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','6d2b6450-6cd3-4956-ab55-c18c400bb036',NOW(), NOW()),
     ('7ccee999-37ca-49b9-881b-a6c95809a6a1','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','7497609c-8fba-4c33-8bdd-bbc443865b73',NOW(), NOW()),
-    ('1b73b515-16e0-4841-8397-5442552ec708','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','7fad0844-4563-408c-a269-e3a2d401ae88',NOW(), NOW(),
+    ('1b73b515-16e0-4841-8397-5442552ec708','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','7fad0844-4563-408c-a269-e3a2d401ae88',NOW(), NOW()),
     ('26566951-6b8d-4bed-a3d2-d12f29c90fa2','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','8668919e-1112-49cc-8ae0-74808cb9e9cc',NOW(), NOW()),
-    ('16f5f7e7-e021-406c-9a8f-aeb2f136d518','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','6d7fe0fb-4b98-450b-8e48-aac8a5809370',NOW(), NOW()),
-    ('40c7b944-8c0a-421a-b3f4-b52c996b5524','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','67b18bdb-dadf-4a0d-b6fb-95cfe360e21a',NOW(), NOW()),
+    ('16f5f7e7-e021-406c-9a8f-aeb2f136d518','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','8d7fe0fb-4b98-450b-8e48-aac8a5809370',NOW(), NOW()),
+    ('40c7b944-8c0a-421a-b3f4-b52c996b5524','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','76b18bdb-dadf-4a0d-b6fb-95cfe360e21a',NOW(), NOW()),
     ('40c7b944-8c0a-421a-b3f4-b52c996b1234','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','6d7fe0fb-4b98-450b-8e48-aac8a5809370',NOW(), NOW());
 
 DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
+CREATE TABLE `user`(
     `id` varchar(36) NOT NULL,
     `username` varchar(45) UNIQUE NOT NULL,
     `account_name` varchar(20) UNIQUE NOT NULL,
@@ -77,7 +77,6 @@ CREATE TABLE `user` (
     `password` blob NOT NULL,
     `salt` blob NOT NULL,
     `status` tinyint NOT NULL DEFAULT 0,
-    `deleted` tinyint,
     `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
     `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
     PRIMARY  KEY (`id`)
