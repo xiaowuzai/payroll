@@ -11,9 +11,9 @@ import (
 var _ service.RoleRepo = (*roleRepo)(nil)
 
 type Role struct {
-	Id string `xorm:"id pk"`
-	Name string `xorm:"name"`
-	Description string `xorm:"description"`
+	Id string `xorm:"id varchar(36) pk"`
+	Name string `xorm:"name varchar(255)"`
+	Description string `xorm:"description varchar(255)"`
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`
 	Deleted bool `xorm:"default false"`

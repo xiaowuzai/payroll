@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xiaowuzai/payroll/internal/router/handler/response"
 	"github.com/xiaowuzai/payroll/internal/service"
 	"log"
 	"net/http"
@@ -19,21 +20,21 @@ func NewOrganizationHandler(org *service.OrganizationService) *OrganizationHandl
 
 type Organization struct {
 	Id string `json:"id"`
-	Name string `json:"name"`
-	OrganizationSalary OrganizationSalary `json:"organizationSalary"`
-	ParentId string `json:"parentId"`
+	Name string `json:"name" binding:"required"`
+	ParentId string `json:"parentId" binding:"required"`
 	Type int32  `json:"type"`   // 0 单位、 1 工资表
 	SalaryType int32  `json:"salaryType"` // 0:工资 1:福利 2: 退休    工资类型
 	EmployeeType int32 `json:"employeeType"` // 员工类型： 0: 公务员  1:事业 2: 企业
 	Children []*Organization `json:"children"`
 }
 
-type OrganizationSalary  struct {
-	Id string `json:"id"`  // OrganizationId
-}
 
-
-// GET
+// @Summary 获取组织列表
+// @Description 获取组织列表
+// @Tags 组织管理
+// @Accept application/json
+// @Success 200 {object} Organization
+// @Router /v1/auth/organization [get]
 func (r *OrganizationHandler) ListOrganization(c *gin.Context) {
 	ctx := c.Request.Context()
 	orgs,err := r.org.ListOrganization(ctx)
@@ -43,10 +44,16 @@ func (r *OrganizationHandler) ListOrganization(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK,orgs)
+	c.JSON(http.StatusOK, orgs)
 }
 
-// POST
+// @Summary 添加组织
+// @Description 添加组织、工资表
+// @Tags 组织管理
+// @Accept application/json
+// @Param Organization body Organization true ""
+// @Success 200 {object} response.SuccessMessage
+// @Router /v1/auth/organization [post]
 func (r *OrganizationHandler) AddOrganization(c *gin.Context) {
 	org := &Organization{}
 	err := c.ShouldBindJSON(org)
@@ -68,5 +75,5 @@ func (r *OrganizationHandler) AddOrganization(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK,nil)
+	response.Success(c,nil)
 }

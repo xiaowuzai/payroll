@@ -6,7 +6,6 @@ import (
 	"github.com/xiaowuzai/payroll/internal/service"
 	"log"
 	"net/http"
-	"time"
 )
 
 type RoleHandler struct {
@@ -25,7 +24,7 @@ type Role struct {
 	Description string `json:"description"`
 	MenuKeys map[string]string `json:"menu_key"`
 	Menus []string `json:"menus" binding:"required"`
-	Created time.Time `json:"created"`
+	Created int64 `json:"created"`
 }
 
 // @Summary 添加角色
@@ -81,7 +80,7 @@ func (r *RoleHandler) ListRole(c *gin.Context) {
 			Id: v.Id,
 			Name: v.Name,
 			Description: v.Description,
-			Created: v.Created,
+			Created: v.Created.Unix(),
 		})
 	}
 

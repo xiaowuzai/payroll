@@ -31,11 +31,11 @@ func NewUserRepo(data *Data) service.UserRepo {
 type User struct {
 	Id string `xorm:"id pk varchar(36) notnull "`
 	Username string `xorm:"username varchar(45) unique "` // 用户名
-	AccountName string `xorm:"account_name varchar(20) unique "` // 用户帐号，用于登录
-	Email string `xorm:"email"`
-	RoleId string `xorm:"role_id"` // Role.Id
-	Password []byte `xorm:"password"`  // default: 123456
-	Salt []byte `xorm:"salt"`
+	AccountName string `xorm:"account_name varchar(20) unique"` // 用户帐号，用于登录
+	Email string `xorm:"email varchar(30)"`
+	RoleId string `xorm:"role_id varchar(36) notnull"` // Role.Id
+	Password []byte `xorm:"password varchar(20)"`  // default: 123456
+	Salt []byte `xorm:"salt varchar(255)"`
 	Status int32 `xorm:"status"`  // 0 正常、1 禁用
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`
@@ -108,6 +108,7 @@ func (ur *userRepo)getUser(ctx context.Context, userId string, accountName strin
 	u := &User{}
 
 	session := ur.data.db.NewSession()
+	defer session.Close()
 	if userId != ""  {
 		session = session.ID(userId)
 	}
@@ -116,12 +117,14 @@ func (ur *userRepo)getUser(ctx context.Context, userId string, accountName strin
 	}
 	has, err := session.Get(u)
 	if err != nil {
-		return nil, err
+		log.Printf("[ getUser ] error: %s", err.Error())
+		return nil, errors.New("查询用户信息失败")
 	}
 	if !has {
 		log.Printf("userId: %s not exist\n", userId)
 		return nil, errors.New("用户不存在")
 	}
+
 	return u, nil
 }
 

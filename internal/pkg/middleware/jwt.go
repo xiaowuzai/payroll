@@ -170,3 +170,13 @@ func setAuthKey(c *gin.Context, value interface{}) {
 func GenerateRefreshToken(authInfo *AuthInfo) (string, error) {
 	return generateToken(authInfo, time.Hour * 72)
 }
+
+func ParseJWT(ctx *gin.Context) (*AuthInfo, error){
+	token := ctx.Request.Header.Get(authorization)
+	//requestId := ctx.Request.Header.Get(RequestId)
+	if token == "" {
+		return nil, errors.New(ErrTokenExpired.Error())
+	}
+
+	return ParseToken(token)
+}

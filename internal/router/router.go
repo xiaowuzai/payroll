@@ -17,17 +17,26 @@ type Router struct {
 }
 
 func (r *Router)WithEngine(engine *gin.Engine) {
+
+	engine.Use(middleware.CORSMiddleware(), gin.Recovery(), gin.Logger())
 	v1 := engine.Group("/v1")
-	v1.Use(gin.Recovery(), gin.Logger(),middleware.CORSMiddleware())
+
 	v1.POST("/login", r.user.Login)
 	v1.POST("/admin-user", r.user.AddAdmin)
 
 	v1auth := v1.Group("/auth")
-	v1auth.Use(middleware.JWTAuthMiddleware())
-	v1auth.POST("/role", r.role.AddRole)
-	v1auth.GET("/role/:id", r.role.GetRole)
-	v1auth.GET("/role", r.role.ListRole)
-	v1auth.GET("/organization",r.org.ListOrganization)
+	//v1auth.Use(middleware.JWTAuthMiddleware())
+	v1auth.GET("/whoami", r.user.WhoAmI)
+
+	role := v1auth.Group("/role")
+	role.POST("", r.role.AddRole)
+	role.GET("/:id", r.role.GetRole)
+	role.GET("", r.role.ListRole)
+
+	organization := v1auth.Group("/organization")
+	organization.GET("",r.org.ListOrganization)
+	organization.POST("",r.org.AddOrganization)
+	//organization.GET("/:id",r.org.ListOrganization)
 }
 
 func NewRouter(role *handler.RoleHandler, org *handler.OrganizationHandler, user *handler.UserHandler) *Router {

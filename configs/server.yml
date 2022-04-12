@@ -1,11 +1,23 @@
 
-server:
-    host: 127.0.0.1
-    port: 8888
-    name: payroll_server
-    database:
-        host: mysql.dev.zgcszkw.com
-        username: root
-        passwd: AppStore@123
-        port: 3306
-        showsql: true
+local:
+    server:
+        host: 0.0.0.0
+        port: 8880
+        name: payroll_server
+        database:
+            host: mysql.dev.zgcszkw.com
+            username: root
+            passwd: AppStore@123
+            port: 3306
+            showsql: true
+dev:
+    server:
+        host: 0.0.0.0
+        port: 80
+        name: payroll_server
+        database:
+            host: mysql.dev.zgcszkw.com
+            username: root
+            passwd: AppStore@123
+            port: 3306
+            showsql: true

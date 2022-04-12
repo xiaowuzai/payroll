@@ -2,6 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xiaowuzai/payroll/internal/pkg/middleware"
+	"github.com/xiaowuzai/payroll/internal/router/handler/response"
 	"net/http"
 )
 
@@ -26,11 +28,22 @@ func (uh *UserHandler) Login(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	token, refresh,err := uh.user.Login(ctx, login.AccountName,login.Password)
+	token, refresh,err := uh.user.Login(ctx, login.AccountName, login.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.JSON(http.StatusOK,gin.H{"token":token, "refreshToken": refresh})
+}
+
+
+func (uh *UserHandler) WhoAmI(c *gin.Context) {
+	authInfo, err := middleware.ParseJWT(c)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	response.Success(c, authInfo)
 }

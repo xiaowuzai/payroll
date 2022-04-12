@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/xiaowuzai/payroll/internal/service"
 	"github.com/xiaowuzai/payroll/pkg/uuid"
+	"time"
 )
 
 var _ service.OrganizationRepo = (*organizationRepo)(nil)
@@ -32,13 +33,14 @@ const (
 )
 
 type Organization struct {
-	Id string
-	ParentId string
-	Name string
-	Type OrganizationType    // 0 单位、 1 工资表
-	Path string // .ParentId.Id
-	SalaryType SalaryType   // 0:工资 1:福利 2: 退休    工资类型
-	EmployeeType EmployeeType // 员工类型： 0: 公务员  1:事业 2: 企业
+	Id string `xorm:"id varchar(36) pk"`
+	ParentId string `xorm:"parent_id varchar(36) notnull"`
+	Name string `xorm:"name varchar(255)  notnull"`
+	Type OrganizationType  `xorm:"type int notnull"`  // 0 单位、 1 工资表
+	Path string `xorm:"path varchar(255) notnull"`// .ParentId.Id
+	SalaryType SalaryType  `xorm:"salary_type int notnull"` // 0:工资 1:福利 2: 退休    工资类型
+	EmployeeType EmployeeType `xorm:"employee_type int notnull"`// 员工类型： 0: 公务员  1:事业 2: 企业
+	Created time.Time `xorm:""`
 }
 
 type organizationRepo struct {

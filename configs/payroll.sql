@@ -76,7 +76,7 @@ CREATE TABLE `user`(
     `role_id` varchar(36) NOT NULL,
     `password` blob NOT NULL,
     `salt` blob NOT NULL,
-    `status` tinyint NOT NULL DEFAULT 0,
+    `status` int NOT NULL,
     `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
     `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
     PRIMARY  KEY (`id`)
@@ -105,7 +105,7 @@ CREATE TABLE `employee` (
 DROP TABLE  IF EXISTS `organization`;
 CREATE TABLE `organization` (
     `id` varchar(36) NOT NULL,
-    `parent_id` int unsigned NOT NULL,
+    `parent_id` varchar(36) NOT NULL,
     `name` varchar(255) NOT NULL,
     `path` varchar(255),
     `type` tinyint,

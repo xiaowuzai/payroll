@@ -14,9 +14,9 @@ type Menu struct {
 }
 
 type RoleMenu struct {
-	Id string `xorm:"id"`
-	RoleId string `xorm:"role_id"`
-	MenuId string `xorm:"menu_id"`
+	Id string `xorm:"id varchar(36) pk"`
+	RoleId string `xorm:"role_id varchar(36) notnull"`
+	MenuId string `xorm:"menu_id varchar(36) notnull"`
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`
 }

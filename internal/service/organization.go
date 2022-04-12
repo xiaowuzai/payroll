@@ -37,7 +37,7 @@ func (os *OrganizationService) ListOrganization(ctx context.Context) (*Organizat
 
 	orgMap := make(map[string][]*Organization, len(orgs))
 	var root *Organization
-	var rootParent  = ""
+	var rootParent  = "root"
 
 	for _, org := range orgs {
 		org := org
