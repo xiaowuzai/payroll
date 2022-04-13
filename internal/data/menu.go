@@ -2,8 +2,11 @@ package data
 
 import (
 	"context"
+	"github.com/xiaowuzai/payroll/internal/service"
 	"time"
 )
+
+var _ service.MenuRepo = (*MenuRepo)(nil)
 
 type Menu struct {
 	Id string `xorm:"id"`
@@ -41,4 +44,37 @@ func (data *Data)listMenus(ctx context.Context) ([]*Menu, error) {
 	menus := make([]*Menu,0)
 	err := data.db.Find(&menus)
 	return menus, err
+}
+
+type MenuRepo struct {
+	data *Data
+}
+
+// map[key]id
+func menuToMap(menus []*Menu) map[string]string{
+	menusMap := make(map[string]string, len(menus))
+	for _, v := range menus {
+		menusMap[v.Keys] = v.Id
+	}
+	return menusMap
+}
+
+func NewMenuRepo(data *Data) service.MenuRepo{
+	return &MenuRepo{
+		data: data,
+	}
+}
+
+
+func (mr *MenuRepo) ListMenu(ctx context.Context) (*service.Menu, error) {
+	menus, err := mr.data.listMenus(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	menusMap := menuToMap(menus)
+
+	return &service.Menu{
+		MenuKeys: menusMap,
+	},nil
 }

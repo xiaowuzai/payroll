@@ -14,6 +14,17 @@ type Router struct {
 	role *handler.RoleHandler
 	org *handler.OrganizationHandler
 	user *handler.UserHandler
+	menu *handler.MenuHandler
+}
+
+func NewRouter(role *handler.RoleHandler, org *handler.OrganizationHandler,
+	user *handler.UserHandler, menu *handler.MenuHandler) *Router {
+	return &Router{
+		role:role,
+		org:org,
+		user:user,
+		menu:menu,
+	}
 }
 
 func (r *Router)WithEngine(engine *gin.Engine) {
@@ -28,6 +39,9 @@ func (r *Router)WithEngine(engine *gin.Engine) {
 	//v1auth.Use(middleware.JWTAuthMiddleware())
 	v1auth.GET("/whoami", r.user.WhoAmI)
 
+	menu := v1auth.Group("/menu")
+	menu.GET("",r.menu.ListMenu)
+
 	role := v1auth.Group("/role")
 	role.POST("", r.role.AddRole)
 	role.GET("/:id", r.role.GetRole)
@@ -37,12 +51,4 @@ func (r *Router)WithEngine(engine *gin.Engine) {
 	organization.GET("",r.org.ListOrganization)
 	organization.POST("",r.org.AddOrganization)
 	//organization.GET("/:id",r.org.ListOrganization)
-}
-
-func NewRouter(role *handler.RoleHandler, org *handler.OrganizationHandler, user *handler.UserHandler) *Router {
-	return &Router{
-		role:role,
-		org:org,
-		user:user,
-	}
 }

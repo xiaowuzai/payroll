@@ -9,7 +9,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewRoleRepo, NewOrganizationRepo, NewUserRepo)
+var ProviderSet = wire.NewSet(NewData, NewRoleRepo, NewOrganizationRepo, NewUserRepo, NewMenuRepo)
 
 type Data struct {
 	db *xorm.Engine
