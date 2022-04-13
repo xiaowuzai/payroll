@@ -39,14 +39,19 @@ func (r *Router)WithEngine(engine *gin.Engine) {
 	//v1auth.Use(middleware.JWTAuthMiddleware())
 	v1auth.GET("/whoami", r.user.WhoAmI)
 
+	//  /v1/auth/menu
 	menu := v1auth.Group("/menu")
 	menu.GET("",r.menu.ListMenu)
 
+	//  /v1/auth/role
 	role := v1auth.Group("/role")
 	role.POST("", r.role.AddRole)
 	role.GET("/:id", r.role.GetRole)
 	role.GET("", r.role.ListRole)
+	role.PUT("", r.role.UpdateRole)
+	role.DELETE("", r.role.DeleteRole)
 
+	// /v1/auth/organization
 	organization := v1auth.Group("/organization")
 	organization.GET("",r.org.ListOrganization)
 	organization.POST("",r.org.AddOrganization)

@@ -22,9 +22,24 @@ type Role struct {
 	Id string `json:"id"`
 	Name string `json:"name" binding:"required"`
 	Description string `json:"description"`
-	MenuKeys map[string]string `json:"menu_key"`
 	Menus []string `json:"menus" binding:"required"`
 	Created int64 `json:"created"`
+}
+
+func (r *Role) toService() *service.Role{
+	return &service.Role{
+		Id: r.Id,
+		Name: r.Name,
+		Description: r.Description,
+		Menus: r.Menus,
+	}
+}
+
+func (r *Role) fromService(sr *service.Role) {
+	r.Id = sr.Id
+	r.Name = sr.Name
+	r.Menus = sr.Menus
+	r.Created = sr.Created.Unix()
 }
 
 // @Summary 添加角色
@@ -45,11 +60,8 @@ func (r *RoleHandler) AddRole(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	userId := ""
-	err = r.role.AddRole(ctx,userId, &service.Role{
-		Description: role.Description,
-		Name: role.Name,
-		Menus: role.Menus,
-	})
+	sr := role.toService()
+	err = r.role.AddRole(ctx, userId, sr)
 	if err != nil {
 		response.Error(c,http.StatusBadRequest, err.Error())
 		return
@@ -79,6 +91,7 @@ func (r *RoleHandler) ListRole(c *gin.Context) {
 		roles = append(roles, &Role{
 			Id: v.Id,
 			Name: v.Name,
+			Menus: v.Menus,
 			Description: v.Description,
 			Created: v.Created.Unix(),
 		})
@@ -104,19 +117,58 @@ func (r *RoleHandler) GetRole(c *gin.Context) {
 	ctx := c.Request.Context()
 	userId :=  ""
 	log.Println("roleId: ", roleId)
-	sRole, err := r.role.GetRole(ctx, userId, roleId)
+	sr, err := r.role.GetRole(ctx, userId, roleId)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	role := &Role{
-		Id: sRole.Id,
-		Name: sRole.Name,
-		Description: sRole.Description,
-		Menus: sRole.Menus,
-		MenuKeys: sRole.MenuKey,
-	}
+	role := new(Role)
+	role.fromService(sr)
 
 	c.JSON(http.StatusOK, role)
+}
+
+
+// @Summary 添加角色
+// @Description 指定角色的菜单权限
+// @Tags 角色管理
+// @Accept application/json
+// @Param Role body Role true ""
+// @Success 200 {object} Role
+// @Router /v1/auth/role [put]
+func (r *RoleHandler) UpdateRole(c *gin.Context) {
+	role := &Role{}
+	err := c.ShouldBindJSON(role)
+	if err != nil {
+		response.Error(c,http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	sr := role.toService()
+	err = r.role.UpdateRole(ctx, sr)
+	if err != nil {
+		response.Error(c,http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c,nil)
+}
+
+func (r *RoleHandler) DeleteRole(c *gin.Context) {
+	req := &RequestId{}
+	err := c.ShouldBindJSON(req)
+	if err != nil {
+		response.Error(c,http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx :=  c.Request.Context()
+	if err := r.role.DeleteRole(ctx, req.Id); err != nil {
+		response.InternalErr(c, err.Error())
+	}
+
+	response.Success(c,nil)
 }

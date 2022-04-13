@@ -12,6 +12,10 @@ type RoleRepo interface {
 	ListRole(context.Context, string) ([]*Role,error)
 	// ctx, userId, roleId
 	GetRole(context.Context, string, string) (*Role, error)
+
+	UpdateRole(context.Context, *Role) error
+
+	DeleteRole(context.Context, string) error
 }
 
 type RoleService struct {
@@ -41,7 +45,6 @@ type Role struct {
 	Id string
 	Name string
 	Description string
-	MenuKey map[string]string  // menu keys : id
 	Menus []string  // menu ids
 	Created time.Time
 }
@@ -60,4 +63,12 @@ func  (r *RoleService)ListRole(ctx context.Context, userId string) ([]*Role, err
 
 func (r *RoleService) GetRole(ctx context.Context, userId, roleId string) (*Role, error) {
 	return r.repo.GetRole(ctx, userId, roleId)
+}
+
+func (r *RoleService) UpdateRole(ctx context.Context, role *Role)  error {
+	return r.repo.UpdateRole(ctx, role)
+}
+
+func (r *RoleService) DeleteRole(ctx context.Context, id string)  error {
+	return r.repo.DeleteRole(ctx, id)
 }

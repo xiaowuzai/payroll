@@ -9,6 +9,7 @@ import (
 	"github.com/xiaowuzai/payroll/pkg/uuid"
 	"log"
 	"time"
+	"xorm.io/xorm"
 )
 
 var _ service.UserRepo = (*userRepo)(nil)
@@ -176,4 +177,16 @@ func validateUserPassword(sumPwd []byte, password []byte) bool {
 		return false
 	}
 	return true
+}
+
+
+// 如果不存在返回false
+func (u *User) getByRoleId(ctx context.Context, session *xorm.Session) (bool, error) {
+	has, err := session.ID(u.Id).Get(u)
+	if err != nil {
+		log.Println("getByRoleId error", err.Error())
+		return false, errors.New("查找用户失败")
+	}
+
+	return has, err
 }
