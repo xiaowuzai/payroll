@@ -68,6 +68,7 @@ func (rr *roleRepo)AddRole(ctx context.Context, userId string, sRole *service.Ro
 		return err
 	}
 
+	session.Commit()
 	return nil
 }
 

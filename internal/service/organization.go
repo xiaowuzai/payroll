@@ -7,6 +7,9 @@ import (
 type OrganizationRepo interface {
 	ListOrganization(context.Context)([]*Organization, error)
 	AddOrganization(context.Context, *Organization) error
+	DeleteOrganization(context.Context, string) error
+	UpdateOrganization(context.Context, *Organization) error
+	GetOrganization(context.Context, string) (*Organization, error)
 }
 
 type OrganizationService struct {
@@ -75,6 +78,13 @@ func (os *OrganizationService) AddOrganization(ctx context.Context, organization
 	return os.repo.AddOrganization(ctx, organization)
 }
 
+func (os *OrganizationService) UpdateOrganization(ctx context.Context, organization *Organization) error{
+	return os.repo.UpdateOrganization(ctx, organization)
+}
+
+func (os *OrganizationService) DeleteOrganization(ctx context.Context, id string) error{
+	return os.repo.DeleteOrganization(ctx, id)
+}
 
 
 

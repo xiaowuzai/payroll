@@ -5,7 +5,9 @@ import (
 	"errors"
 	"github.com/xiaowuzai/payroll/internal/service"
 	"github.com/xiaowuzai/payroll/pkg/uuid"
+	"log"
 	"time"
+	"xorm.io/xorm"
 )
 
 var _ service.OrganizationRepo = (*organizationRepo)(nil)
@@ -108,6 +110,17 @@ func (or *organizationRepo)AddOrganization(ctx context.Context, sorg *service.Or
 	return nil
 }
 
+func (or *organizationRepo)UpdateOrganization(ctx context.Context, sorg *service.Organization) error {
+	return nil
+}
+
+func (or *organizationRepo)GetOrganization(ctx context.Context, id string) (*service.Organization, error) {
+	return nil,nil
+}
+func (or *organizationRepo)DeleteOrganization(ctx context.Context, id string) error {
+	return nil
+}
+
 func (or *organizationRepo)getOrganization(ctx context.Context, orgId string)(*Organization, error) {
 	org := &Organization{}
 	has, err := or.data.db.ID(orgId).Get(org)
@@ -129,5 +142,24 @@ func (or *organizationRepo)insertOrganization(ctx context.Context, organization 
 		return errors.New("插入组织失败")
 	}
 	return nil
+}
+
+func (org *Organization) get(ctx context.Context, session *xorm.Session) (bool, error){
+	has, err := session.ID(org.Id).Get(org)
+	if err != nil {
+		log.Printf("organization get error: %s\n", err.Error())
+		return false, errors.New("获取组织信息错误")
+	}
+
+	return has, nil
+}
+
+func (org *Organization) update(ctx context.Context, session *xorm.Session) error{
+	 _, err := session.ID(org.Id).Update(org)
+	 if err != nil {
+		 log.Printf("organization update error: %s\n", err.Error())
+		 return errors.New("更新组织信息错误")
+	 }
+	 return nil
 }
 
