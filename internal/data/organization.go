@@ -16,11 +16,13 @@ type Organization struct {
 	Id string `xorm:"id varchar(36) pk"`
 	ParentId string `xorm:"parent_id varchar(36) notnull"`
 	Name string `xorm:"name varchar(255)  notnull"`
-	Type int32  `xorm:"type int notnull"`  // 0 单位、 1 工资表
 	Path string `xorm:"path varchar(255) notnull"`// .ParentId.Id
-	SalaryType int32  `xorm:"salary_type int notnull"` // 0:工资 1:福利 2: 退休    工资类型
+	SalaryType string  `xorm:"salary_type varchar(36)"` //   工资类型：手动输入
+	Created time.Time `xorm:"created"`
+	Updated time.Time `xorm:"updated"`
+	FeeType int32  `xorm:"fee_type int notnull"` // 0:工资 1:福利 2: 退休    费用类型
+	Type int32  `xorm:"type int notnull"`  // 0 单位、 1 工资表
 	EmployeeType int32 `xorm:"employee_type int notnull"`// 员工类型： 0: 公务员  1:事业 2: 企业
-	Created time.Time `xorm:""`
 }
 
 func (org *Organization)toService() *service.Organization{
@@ -30,6 +32,7 @@ func (org *Organization)toService() *service.Organization{
 		Name: org.Name,
 		Type: org.Type,
 		SalaryType: org.SalaryType,
+		FeeType: org.FeeType,
 		EmployeeType: org.EmployeeType,
 	}
 }

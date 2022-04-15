@@ -1,29 +1,8 @@
-DROP DATABASE IF EXISTS payroll;
-
 CREATE DATABASE IF NOT EXISTS payroll DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
 USE payroll;
 
-DROP TABLE IF EXISTS `role`;
-CREATE TABLE `role` (
-    `id` varchar(36) NOT NULL,
-    `name` varchar(30) UNIQUE NOT NULL,
-    `description` varchar(255) NOT NULL,
-    `deleted` tinyint,
-    `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
-    `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-    PRIMARY  KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO role VALUES('4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','系统管理员', '系统管理员',0, NOW(), NOW());
 
-DROP TABLE IF EXISTS `menu`;
-CREATE TABLE `menu`(
-    `id` varchar(36) NOT NULL,
-    `keys` varchar(36) NOT NULL,
-    `name` varchar(30) NOT NULL,
-    `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
-    `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-    PRIMARY  KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO menu VALUES
     ('3f946719-679d-4d0a-b265-a33e16cdd7be','salary-management', '工资管理', NOW(), NOW()),
     ('4b1c567e-c856-4053-afb0-f7c3094f174f','salary-preview', '当月工资预览', NOW(), NOW()),
@@ -39,17 +18,6 @@ INSERT INTO menu VALUES
     ('8d7fe0fb-4b98-450b-8e48-aac8a5809370','role-management', '角色管理', NOW(), NOW()),
     ('76b18bdb-dadf-4a0d-b6fb-95cfe360e21a','organization', '组织机构', NOW(), NOW()),
     ('6d7fe0fb-4b98-450b-8e48-aac8a5809370','staff-management', '员工管理', NOW(), NOW());
-
-DROP TABLE IF EXISTS `role_menu`;
-CREATE TABLE `role_menu`(
-   `id` varchar(36) NOT NULL,
-   `role_id` varchar(36) NOT NULL,
-   `menu_id` varchar(36) NOT NULL,
-   `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
-   `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-   PRIMARY  KEY (`id`),
-   UNIQUE INDEX role_menu_unique (role_id,menu_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO role_menu VALUES
     ('de504569-42f5-4a90-9fc4-2481f05cdd89','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','3f946719-679d-4d0a-b265-a33e16cdd7be',NOW(), NOW()),
@@ -67,22 +35,6 @@ INSERT INTO role_menu VALUES
     ('40c7b944-8c0a-421a-b3f4-b52c996b5524','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','76b18bdb-dadf-4a0d-b6fb-95cfe360e21a',NOW(), NOW()),
     ('40c7b944-8c0a-421a-b3f4-b52c996b1234','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','6d7fe0fb-4b98-450b-8e48-aac8a5809370',NOW(), NOW());
 
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user`(
-    `id` varchar(36) NOT NULL,
-    `username` varchar(45) UNIQUE NOT NULL,
-    `account_name` varchar(20) UNIQUE NOT NULL,
-    `email` varchar(45) UNIQUE,
-    `role_id` varchar(36) NOT NULL,
-    `password` blob NOT NULL,
-    `salt` blob NOT NULL,
-    `status` int NOT NULL,
-    `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
-    `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-    PRIMARY  KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `employee`;
 CREATE TABLE `employee` (
     `id` varchar(36) NOT NULL,
@@ -96,21 +48,6 @@ CREATE TABLE `employee` (
     `level` varchar(24),
     `base_salary` int,
     `identity` tinyint(3),
-    `deleted` tinyint,
-    `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
-    `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-    PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE  IF EXISTS `organization`;
-CREATE TABLE `organization` (
-    `id` varchar(36) NOT NULL,
-    `parent_id` varchar(36) NOT NULL,
-    `name` varchar(255) NOT NULL,
-    `path` varchar(255),
-    `type` tinyint,
-    `salary_type` tinyint,
-    `employee_type` tinyint,
     `deleted` tinyint,
     `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
     `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',

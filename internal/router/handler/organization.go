@@ -22,8 +22,9 @@ type Organization struct {
 	Id string `json:"id"`
 	Name string `json:"name" binding:"required"`
 	ParentId string `json:"parentId" binding:"required"`
+	SalaryType string  `json:"salaryType"` //   工资类型
 	Type int32  `json:"type"`   // 0 单位、 1 工资表
-	SalaryType int32  `json:"salaryType"` // 0:工资 1:福利 2: 退休    工资类型
+	FeeType int32  `json:"feeType"` // 0:工资 1:福利 2: 退休    费用类型
 	EmployeeType int32 `json:"employeeType"` // 员工类型： 0: 公务员  1:事业 2: 企业
 	Children []*Organization `json:"children"`
 }
