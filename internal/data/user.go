@@ -30,8 +30,8 @@ func NewUserRepo(data *Data) service.UserRepo {
 
 
 type User struct {
-	Id string `xorm:"id pk varchar(36) notnull "`
-	Username string `xorm:"username varchar(45) unique "` // 用户名
+	Id string `xorm:"id pk varchar(36) notnull"`
+	Username string `xorm:"username varchar(45) unique"` // 用户名
 	AccountName string `xorm:"account_name varchar(20) unique"` // 用户帐号，用于登录
 	Email string `xorm:"email varchar(30)"`
 	RoleId string `xorm:"role_id varchar(36) notnull"` // Role.Id

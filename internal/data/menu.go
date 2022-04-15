@@ -9,8 +9,8 @@ import (
 var _ service.MenuRepo = (*MenuRepo)(nil)
 
 type Menu struct {
-	Id string `xorm:"id"`
-	Name string `xorm:"name"`
+	Id string `xorm:"id varchar(36) pk"`
+	Name string `xorm:"name notnull"`
 	Keys string `xorm:"keys"`
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`

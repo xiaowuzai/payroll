@@ -1,34 +1,20 @@
 package data
 
 import (
-	"fmt"
-	"github.com/xiaowuzai/payroll/internal/config"
 	_ "github.com/go-sql-driver/mysql"
-	"xorm.io/xorm"
 	"github.com/google/wire"
+	"xorm.io/xorm"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewRoleRepo, NewOrganizationRepo, NewUserRepo, NewMenuRepo)
+var ProviderSet = wire.NewSet(NewData, NewRoleRepo, NewOrganizationRepo, NewUserRepo, NewMenuRepo, NewDB)
 
 type Data struct {
 	db *xorm.Engine
 }
 
-func NewData(conf *config.Database) (*Data, error) {
-	source := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", conf.Username, conf.Passwd, conf.Host, conf.Port, "payroll")
-	engine, err := xorm.NewEngine("mysql", source)
-	engine.ShowSQL(conf.ShowSQL)
-	if err != nil {
-		return nil, err
-	}
-
-	err = engine.Ping()
-	if err != nil {
-		return nil, err
-	}
-
+func NewData(db *xorm.Engine) (*Data, error) {
 	return &Data{
-		db:engine,
+		db:db,
 	},nil
 }

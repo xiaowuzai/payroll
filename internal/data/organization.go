@@ -12,37 +12,35 @@ import (
 
 var _ service.OrganizationRepo = (*organizationRepo)(nil)
 
-// 组织结构中的组织类型
-type OrganizationType int32
-const (
-	OrgTypeEnterprise OrganizationType = iota  // 单位
-	OrgTypeSalaryTable  // 工资表
-)
-
-// 工资表中的工资类型
-type SalaryType int32
-const (
-	SalTypeSalary SalaryType = iota
-	SalTypeWelfare
-	SalTypeRetire
-)
-
-type EmployeeType int32
-const (
-	EepTypeCivilServant EmployeeType = iota   // 公务员
-	EepTypePublic // 事业单位
-	EepTypeEnterprise // 企业单位
-)
-
 type Organization struct {
 	Id string `xorm:"id varchar(36) pk"`
 	ParentId string `xorm:"parent_id varchar(36) notnull"`
 	Name string `xorm:"name varchar(255)  notnull"`
-	Type OrganizationType  `xorm:"type int notnull"`  // 0 单位、 1 工资表
+	Type int32  `xorm:"type int notnull"`  // 0 单位、 1 工资表
 	Path string `xorm:"path varchar(255) notnull"`// .ParentId.Id
-	SalaryType SalaryType  `xorm:"salary_type int notnull"` // 0:工资 1:福利 2: 退休    工资类型
-	EmployeeType EmployeeType `xorm:"employee_type int notnull"`// 员工类型： 0: 公务员  1:事业 2: 企业
+	SalaryType int32  `xorm:"salary_type int notnull"` // 0:工资 1:福利 2: 退休    工资类型
+	EmployeeType int32 `xorm:"employee_type int notnull"`// 员工类型： 0: 公务员  1:事业 2: 企业
 	Created time.Time `xorm:""`
+}
+
+func (org *Organization)toService() *service.Organization{
+	return &service.Organization{
+		Id: org.Id,
+		ParentId: org.ParentId,
+		Name: org.Name,
+		Type: org.Type,
+		SalaryType: org.SalaryType,
+		EmployeeType: org.EmployeeType,
+	}
+}
+
+func (org *Organization) fromService(so *service.Organization) {
+	org.Id = so.Id
+	org.EmployeeType = so.EmployeeType
+	org.SalaryType = so.SalaryType
+	org.Type = so.Type
+	org.ParentId = so.ParentId
+	org.Name = so.Name
 }
 
 type organizationRepo struct {
@@ -64,14 +62,8 @@ func (or *organizationRepo)ListOrganization(ctx context.Context)([]*service.Orga
 
 	res := make([]*service.Organization,0, len(orgs))
 	for _, v := range orgs {
-		res = append(res, &service.Organization{
-			Id: v.Id,
-			Name: v.Name,
-			Type: int32(v.Type),   // 0 单位、 1 工资表
-			ParentId: v.ParentId,
-			SalaryType: int32(v.SalaryType),   // 0:工资 1:福利 2: 退休    工资类型
-			EmployeeType: int32(v.EmployeeType), // 员工类型： 0: 公务员  1:事业 2: 企业
-		})
+		so := v.toService()
+		res = append(res, so)
 	}
 
 	return res, nil
@@ -83,69 +75,90 @@ func (or *organizationRepo)AddOrganization(ctx context.Context, sorg *service.Or
 		return errParent
 	}
 
-	// 查看父节点是否存在
-	parentOrg, err := or.getOrganization(ctx, sorg.ParentId)
+	session, err := BeginSession(ctx, or.data.db)
 	if err != nil {
 		return err
 	}
-	if parentOrg == nil {
+	defer session.Close()
+
+	// 查看父节点是否存在
+	parent := &Organization{
+		Id: sorg.ParentId,
+	}
+	has, err := parent.get(ctx,session)
+	if err != nil {
+		_ = session.Rollback()
+		return err
+	}
+	if !has {
+		_ = session.Rollback()
 		return errParent
 	}
 
-	org := &Organization{
-		Id: uuid.CreateUUID(),
-		ParentId: sorg.ParentId,
-		Name: sorg.Name,
-		Type:OrganizationType(sorg.Type),   // 0 单位、 1 工资表
-		SalaryType: SalaryType(sorg.SalaryType),
-		EmployeeType: EmployeeType(sorg.EmployeeType),
-	}
-	org.Path = parentOrg.Path+"."+ org.Id
+	org := &Organization{}
+	org.fromService(sorg)
+	org.Id = uuid.CreateUUID()
+	org.Path = parent.Path+"."+ org.Id
 
-	err = or.insertOrganization(ctx, org)
+
+	err = org.insert(ctx, session)
 	if err != nil {
+		session.Rollback()
 		return err
 	}
 
 	return nil
 }
 
-func (or *organizationRepo)UpdateOrganization(ctx context.Context, sorg *service.Organization) error {
+func (or *organizationRepo)UpdateOrganization(ctx context.Context, s *service.Organization) error {
+	session, err := BeginSession(ctx, or.data.db)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	org := new(Organization)
+	org.fromService(s)
+	err = org.update(ctx, session)
+	if err != nil {
+		_ = session.Rollback()
+		return err
+	}
+
+	session.Commit()
 	return nil
 }
 
 func (or *organizationRepo)GetOrganization(ctx context.Context, id string) (*service.Organization, error) {
-	return nil,nil
-}
-func (or *organizationRepo)DeleteOrganization(ctx context.Context, id string) error {
-	return nil
-}
-
-func (or *organizationRepo)getOrganization(ctx context.Context, orgId string)(*Organization, error) {
-	org := &Organization{}
-	has, err := or.data.db.ID(orgId).Get(org)
+	session, err := BeginSession(ctx, or.data.db)
 	if err != nil {
 		return nil, err
 	}
-	if !has {
-		return nil,nil
+	defer session.Close()
+
+	org := &Organization{Id: id}
+	has, err := org.get(ctx, session)
+	if err != nil {
+		_ = session.Rollback()
+		return nil, err
 	}
-	return org, nil
+	if !has {
+		_ = session.Rollback()
+		return nil, errors.New("数据不存在")
+	}
+
+	_ = session.Commit()
+
+	return org.toService(), nil
 }
 
-func (or *organizationRepo)insertOrganization(ctx context.Context, organization *Organization) error{
-	num, err := or.data.db.Insert(organization)
-	if err != nil {
-		return err
-	}
-	if num != 1 {
-		return errors.New("插入组织失败")
-	}
+func (or *organizationRepo)DeleteOrganization(ctx context.Context, id string) error {
+
 	return nil
 }
 
 func (org *Organization) get(ctx context.Context, session *xorm.Session) (bool, error){
-	has, err := session.ID(org.Id).Get(org)
+	has, err := session.Get(org)
 	if err != nil {
 		log.Printf("organization get error: %s\n", err.Error())
 		return false, errors.New("获取组织信息错误")
@@ -163,3 +176,20 @@ func (org *Organization) update(ctx context.Context, session *xorm.Session) erro
 	 return nil
 }
 
+func (org *Organization)insert(ctx context.Context, session *xorm.Session) error {
+	_, err := session.Insert(org)
+	if err != nil {
+		log.Println("organization insert error: ", err.Error())
+		return errors.New("数据插入失败")
+	}
+	return nil
+}
+
+func (org *Organization)delete(ctx context.Context, session *xorm.Session) error {
+	_, err := session.ID(org.Id).Delete(org)
+	if err != nil {
+		log.Println("organization insert error: ", err.Error())
+		return errors.New("数据删除失败")
+	}
+	return nil
+}

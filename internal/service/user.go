@@ -28,9 +28,9 @@ type User struct{
 	AccountName string
 	Email string
 	RoleId string
-	Password string `xorm:"password"`  // default: 123456
-	Status int32 `xorm:"status"`  // 0 正常、1 禁用
-	Created time.Time `xorm:"created"`
+	Password string
+	Status int32
+	Created time.Time
 }
 
 func (us *UserService) AddUser (ctx context.Context, user *User) error{

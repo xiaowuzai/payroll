@@ -55,5 +55,5 @@ func (r *Router)WithEngine(engine *gin.Engine) {
 	organization := v1auth.Group("/organization")
 	organization.GET("",r.org.ListOrganization)
 	organization.POST("",r.org.AddOrganization)
-	//organization.GET("/:id",r.org.ListOrganization)
+	organization.GET("/:id",r.org.GetOrganization)
 }

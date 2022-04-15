@@ -17,13 +17,13 @@ type OrganizationService struct {
 }
 
 type Organization struct {
-	Id string
-	ParentId string
-	Name string
-	SalaryType int32   // 0:工资 1:福利 2: 退休    工资类型
-	EmployeeType int32 // 员工类型： 0: 公务员  1:事业 2: 企业
-	Type int32    // 0 单位、 1 工资表
-	Children []*Organization
+	Id string  `json:"id"`
+	ParentId string `json:"parentId"`
+	Name string `json:"name"`
+	SalaryType int32  `json:"salaryType"` // 0:工资 1:福利 2: 退休    工资类型
+	EmployeeType int32 `json:"employeeType"`// 员工类型： 0: 公务员  1:事业 2: 企业
+	Type int32 `json:"type"`   // 0 单位、 1 工资表
+	Children []*Organization `json:"children"`
 }
 
 func NewOrganizationService(repo OrganizationRepo) *OrganizationService {
@@ -84,6 +84,10 @@ func (os *OrganizationService) UpdateOrganization(ctx context.Context, organizat
 
 func (os *OrganizationService) DeleteOrganization(ctx context.Context, id string) error{
 	return os.repo.DeleteOrganization(ctx, id)
+}
+
+func (os *OrganizationService) GetOrganization(ctx context.Context, id string) (*Organization, error){
+	return os.repo.GetOrganization(ctx, id)
 }
 
 
