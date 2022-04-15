@@ -110,6 +110,7 @@ func (or *organizationRepo)AddOrganization(ctx context.Context, sorg *service.Or
 		return err
 	}
 
+	session.Commit()
 	return nil
 }
 
