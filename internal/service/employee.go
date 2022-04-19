@@ -32,10 +32,30 @@ type Employee struct {
 }
 
 type PayrollInfo struct {
-
+	Id string `json:"id"`
+	Employee string `json:"employeeId"`
+	BankId string `json:"bankId"`
+	CardNumber string `json:"cardNumber"`
+	OrganizationId string `json:"organizationId"`
 }
 
 // 添加员工
-func (es *EmployeeService)AddEmployee(ctx context.Context) {
+func (es *EmployeeService)AddEmployee(ctx context.Context, em *Employee) error{
+	return es.repo.AddEmployee(ctx, em)
+}
+
+// 获取员工列表
+func (es *EmployeeService)GetEmployeeList(context.Context) ([]*Employee, error){
 
 }
+
+// 获取指定员工
+func (es *EmployeeService)GetEmployee(context.Context, string) (*Employee, error){
+
+}
+
+// 更新员工
+func (es *EmployeeService)UpdateEmployee(context.Context,*Employee) (*Employee, error){
+
+}
+
