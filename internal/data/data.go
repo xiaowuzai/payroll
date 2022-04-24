@@ -15,6 +15,6 @@ type Data struct {
 
 func NewData(db *xorm.Engine) (*Data, error) {
 	return &Data{
-		db:db,
-	},nil
+		db: db,
+	}, nil
 }

@@ -8,12 +8,12 @@ import (
 )
 
 type Server struct {
-	addr string
-	engine *gin.Engine
+	addr      string
+	engine    *gin.Engine
 	apiRouter *router.Router
 }
 
-func (s *Server)Start() {
+func (s *Server) Start() {
 	err := s.engine.Run(s.addr)
 	if err != nil {
 		panic(err)
@@ -23,8 +23,8 @@ func (s *Server)Start() {
 func NewServer(engine *gin.Engine, apiRouter *router.Router, conf *config.Server) *Server {
 	apiRouter.WithEngine(engine)
 	return &Server{
-		addr: fmt.Sprintf("%s:%d", conf.Host, conf.Port),
-		engine: engine,
+		addr:      fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+		engine:    engine,
 		apiRouter: apiRouter,
 	}
 }

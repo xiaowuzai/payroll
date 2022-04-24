@@ -7,6 +7,6 @@ func CreateUUID() string {
 }
 
 func CreatUUIDBinary() []byte {
-	d,_ := uuid.New().MarshalBinary()
+	d, _ := uuid.New().MarshalBinary()
 	return d
 }

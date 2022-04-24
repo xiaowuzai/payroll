@@ -12,14 +12,14 @@ type BankService struct {
 }
 
 type Bank struct {
-	Id string
+	Id   string
 	Name string
 }
 
-func (bs *BankService)AddBank(ctx context.Context, bank *Bank) error {
+func (bs *BankService) AddBank(ctx context.Context, bank *Bank) error {
 	return bs.repo.AddBank(ctx, bank)
 }
 
-func (bs *BankService)GetBankList(ctx context.Context) ([]*Bank, error) {
+func (bs *BankService) GetBankList(ctx context.Context) ([]*Bank, error) {
 	return bs.GetBankList(ctx)
 }

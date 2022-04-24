@@ -3,13 +3,14 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/xiaowuzai/payroll/internal/pkg/middleware"
-	"github.com/xiaowuzai/payroll/internal/router/handler/response"
+	"github.com/xiaowuzai/payroll/internal/pkg/requestid"
+	"github.com/xiaowuzai/payroll/internal/pkg/response"
 	"net/http"
 )
 
 type LoginRequest struct {
 	AccountName string `json:"accountName"` // 账户名称
-	Password string `json:"password"`
+	Password    string `json:"password"`
 }
 
 // @Summary 登录
@@ -20,30 +21,40 @@ type LoginRequest struct {
 // @Success 200 {object} ""
 // @Router /login [post]
 func (uh *UserHandler) Login(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := uh.logger.WithRequestId(ctx)
+	log.Info("Login function called")
+
 	login := &LoginRequest{}
 	err := c.ShouldBindJSON(login)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		log.Error("ShouldBindJSON error: ", err.Error())
+		response.ParamsError(c, err.Error())
 		return
 	}
 
-	ctx := c.Request.Context()
-	token, refresh,err := uh.user.Login(ctx, login.AccountName, login.Password)
+	token, refresh, err := uh.user.Login(ctx, login.AccountName, login.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		response.WithError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK,gin.H{"token":token, "refreshToken": refresh})
+	log.Info("Login function success")
+	c.JSON(http.StatusOK, gin.H{"token": token, "refreshToken": refresh})
 }
 
-
 func (uh *UserHandler) WhoAmI(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := uh.logger.WithRequestId(ctx)
+	log.Info("WhoAmI function called")
+
 	authInfo, err := middleware.ParseJWT(c)
 	if err != nil {
-		response.BadRequest(c, err.Error())
+		log.Error("WhoAmI function ParseJWT error: ", err.Error())
+		response.Unauthorized(c, err.Error(), err.Error())
 		return
 	}
 
+	log.Info("WhoAmI function success")
 	response.Success(c, authInfo)
 }

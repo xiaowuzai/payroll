@@ -10,7 +10,7 @@ import (
 
 const (
 	authorization = "Authorization"
-	RequestId = "RequestId"
+	RequestId     = "RequestId"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 	defaultTimeout = time.Hour * 2
 	// DefaultIssuer 默认发行
 	defaultIssuer = "CSZK"
-	AuthKey = "AUTH"
+	AuthKey       = "AUTH"
 )
 
 var SecretKey = []byte("zgcszkw.com")
@@ -32,7 +32,7 @@ var (
 	ErrTokenExpired = errors.New("认证失效，请重新认证")
 )
 
-func JWTAuthMiddleware() gin.HandlerFunc{
+func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token := ctx.Request.Header.Get(authorization)
 		//requestId := ctx.Request.Header.Get(RequestId)
@@ -53,64 +53,63 @@ func JWTAuthMiddleware() gin.HandlerFunc{
 	}
 }
 
-type AuthInfo struct{
-	UId string `json:"uid"`
-	Name string `json:"name"`
+type AuthInfo struct {
+	UId   string   `json:"uid"`
+	Name  string   `json:"name"`
 	Menus []string `json:"privileges"`
 }
 
-
 //JWTMiddleware 注册
 type jwtMiddleware struct {
-	Timeout time.Duration
-	Issuer  string
+	Timeout  time.Duration
+	Issuer   string
 	AuthInfo *AuthInfo
 }
 
-func newJWTMiddleware(authInfo *AuthInfo, timeout time.Duration) *jwtMiddleware{
+func newJWTMiddleware(authInfo *AuthInfo, timeout time.Duration) *jwtMiddleware {
 	if timeout == 0 {
 		timeout = defaultTimeout
 	}
 	return &jwtMiddleware{
-		Timeout: timeout,
-		Issuer: defaultIssuer,
+		Timeout:  timeout,
+		Issuer:   defaultIssuer,
 		AuthInfo: authInfo,
 	}
 }
 
-func GenerateToken(info *AuthInfo) (string, error){
+func GenerateToken(info *AuthInfo) (string, error) {
 	return generateToken(info, defaultTimeout)
 }
-func generateToken(info *AuthInfo,timeout time.Duration) (string, error){
+func generateToken(info *AuthInfo, timeout time.Duration) (string, error) {
 	jwtM := newJWTMiddleware(info, timeout)
 	claims := jwtM.newClaims()
 	return claims.genToken()
 }
 
-func (jwtM *jwtMiddleware)newClaims() *Claims {
+func (jwtM *jwtMiddleware) newClaims() *Claims {
 	return &Claims{
 		jwtM.AuthInfo,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().UTC().Add(jwtM.Timeout).Unix(),
-			Issuer:   jwtM.Issuer,
+			Issuer:    jwtM.Issuer,
 		},
 	}
 }
 
-type Claims struct{
+type Claims struct {
 	Data *AuthInfo
 	jwt.StandardClaims
 }
 
-func (c *Claims) genToken()(string, error) {
+func (c *Claims) genToken() (string, error) {
 	// 使用指定的签名方法创建签名对象
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	// 使用指定的secret签名并获得完整的编码后的字符串token
 	return token.SignedString(SecretKey)
 }
 
-func ParseToken(jwtToken string) (*AuthInfo,error) {
-	token, err := jwt.ParseWithClaims(jwtToken, &Claims{}, func(token *jwt.Token)(interface{}, error){
+func ParseToken(jwtToken string) (*AuthInfo, error) {
+	token, err := jwt.ParseWithClaims(jwtToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return SecretKey, nil
 	})
 	if err != nil {
@@ -127,12 +126,12 @@ func ParseToken(jwtToken string) (*AuthInfo,error) {
 	}
 
 	claims, ok := token.Claims.(*Claims)
-	if !ok ||  !token.Valid {
+	if !ok || !token.Valid {
 		return nil, errors.New("token invalid")
 	}
 
 	authInfo := claims.Data
-	return authInfo,nil
+	return authInfo, nil
 }
 
 func Refresh(refreshToken string) (string, error) {
@@ -152,9 +151,9 @@ func Refresh(refreshToken string) (string, error) {
 	return "", errors.New("failed to refresh token")
 }
 
-func checkAuth(authorization string)(*AuthInfo, error) {
+func checkAuth(authorization string) (*AuthInfo, error) {
 	if authorization == "" {
-		return nil,ErrTokenExpired
+		return nil, ErrTokenExpired
 	}
 	authInfo, err := ParseToken(authorization)
 	if err != nil {
@@ -168,10 +167,10 @@ func setAuthKey(c *gin.Context, value interface{}) {
 }
 
 func GenerateRefreshToken(authInfo *AuthInfo) (string, error) {
-	return generateToken(authInfo, time.Hour * 72)
+	return generateToken(authInfo, time.Hour*72)
 }
 
-func ParseJWT(ctx *gin.Context) (*AuthInfo, error){
+func ParseJWT(ctx *gin.Context) (*AuthInfo, error) {
 	token := ctx.Request.Header.Get(authorization)
 	//requestId := ctx.Request.Header.Get(RequestId)
 	if token == "" {

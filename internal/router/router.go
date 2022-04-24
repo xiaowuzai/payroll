@@ -12,7 +12,7 @@ var ProviderSet = wire.NewSet(NewRouter)
 
 type Router struct {
 	role *handler.RoleHandler
-	org *handler.OrganizationHandler
+	org  *handler.OrganizationHandler
 	user *handler.UserHandler
 	menu *handler.MenuHandler
 }
@@ -20,14 +20,14 @@ type Router struct {
 func NewRouter(role *handler.RoleHandler, org *handler.OrganizationHandler,
 	user *handler.UserHandler, menu *handler.MenuHandler) *Router {
 	return &Router{
-		role:role,
-		org:org,
-		user:user,
-		menu:menu,
+		role: role,
+		org:  org,
+		user: user,
+		menu: menu,
 	}
 }
 
-func (r *Router)WithEngine(engine *gin.Engine) {
+func (r *Router) WithEngine(engine *gin.Engine) {
 
 	engine.Use(middleware.CORSMiddleware(), gin.Recovery(), gin.Logger())
 	v1 := engine.Group("/v1")
@@ -41,7 +41,7 @@ func (r *Router)WithEngine(engine *gin.Engine) {
 
 	//  /v1/auth/menu
 	menu := v1auth.Group("/menu")
-	menu.GET("",r.menu.ListMenu)
+	menu.GET("", r.menu.ListMenu)
 
 	//  /v1/auth/role
 	role := v1auth.Group("/role")
@@ -53,7 +53,12 @@ func (r *Router)WithEngine(engine *gin.Engine) {
 
 	// /v1/auth/organization
 	organization := v1auth.Group("/organization")
-	organization.GET("",r.org.ListOrganization)
-	organization.POST("",r.org.AddOrganization)
-	organization.GET("/:id",r.org.GetOrganization)
+	organization.GET("", r.org.ListOrganization)
+	organization.POST("", r.org.AddOrganization)
+	organization.GET("/:id", r.org.GetOrganization)
+
+	user := v1auth.Group("/user")
+	user.GET("", r.user.ListUser)
+	//user.GET("/:id", r.user.GetUser)
+	user.POST("", r.user.AddUser)
 }
