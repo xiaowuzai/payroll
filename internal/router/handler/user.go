@@ -186,5 +186,35 @@ func (uh *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	log.Info("UpdateUser function success")
+	c.JSON(http.StatusOK, nil)
+}
+
+
+func (uh *UserHandler) DeleteUser(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := uh.logger.WithRequestId(ctx)
+	log.Info("DeleteUser function called")
+
+	req := &RequestId{}
+	err := c.ShouldBindJSON(req)
+	if err != nil {
+		log.Error("DeleteUser ShouldBindJSON error: ", err.Error())
+		response.ParamsError(c, err.Error())
+		return
+	}
+	if req.Id == "" {
+		log.Error("DeleteUser id not exist")
+		response.ParamsError(c, "id不存在")
+		return
+	}
+
+	err = uh.user.DeleteUser(ctx, req.Id)
+	if err != nil {
+		response.WithError(c, err)
+		return
+	}
+
+	log.Info("DeleteUser function success")
 	c.JSON(http.StatusOK, nil)
 }

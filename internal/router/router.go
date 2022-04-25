@@ -36,7 +36,8 @@ func (r *Router) WithEngine(engine *gin.Engine) {
 	v1.POST("/admin-user", r.user.AddAdmin)
 
 	v1auth := v1.Group("/auth")
-	//v1auth.Use(middleware.JWTAuthMiddleware())
+	v1auth.Use(middleware.JWTAuthMiddleware())
+	// /v1/auth/whoami
 	v1auth.GET("/whoami", r.user.WhoAmI)
 
 	//  /v1/auth/menu
@@ -55,10 +56,19 @@ func (r *Router) WithEngine(engine *gin.Engine) {
 	organization := v1auth.Group("/organization")
 	organization.GET("", r.org.ListOrganization)
 	organization.POST("", r.org.AddOrganization)
+	organization.PUT("", r.org.UpdateOrganization)
 	organization.GET("/:id", r.org.GetOrganization)
+	organization.DELETE("/:id", r.org.DeleteOrganization)
 
+	// /v1/auth/user
 	user := v1auth.Group("/user")
 	user.GET("", r.user.ListUser)
-	//user.GET("/:id", r.user.GetUser)
+	user.GET("/:id", r.user.GetUser)
 	user.POST("", r.user.AddUser)
+	user.PUT("", r.user.UpdateUser)
+	user.DELETE("", r.user.DeleteUser)
+
+	// /v1/auth/employee
+	//employee := v1auth.Group("/employee")
+
 }

@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+
 type OrganizationHandler struct {
 	org    *service.OrganizationService
 	logger *logger.Logger
@@ -116,21 +117,26 @@ func (oh *OrganizationHandler) AddOrganization(c *gin.Context) {
 // @Param Organization body Organization true ""
 // @Success 200 {object} response.SuccessMessage
 // @Router /v1/auth/organization [update]
-func (r *OrganizationHandler) UpdateOrganization(c *gin.Context) {
+func (oh *OrganizationHandler) UpdateOrganization(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := oh.logger.WithRequestId(ctx)
+	log.Info("UpdateOrganization function called")
+
 	org := &Organization{}
 	err := c.ShouldBindJSON(org)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		log.Error("UpdateOrganization ShouldBindJSON error: ", err.Error())
+		response.ParamsError(c, err.Error())
 		return
 	}
 
 	if org.Id == "" {
-		c.JSON(http.StatusBadRequest, "数据不存在")
+		response.ParamsError(c, "id不存在")
 		return
 	}
 
-	ctx := c.Request.Context()
-	err = r.org.UpdateOrganization(ctx, &service.Organization{
+
+	err = oh.org.UpdateOrganization(ctx, &service.Organization{
 		Id:           org.Id,
 		ParentId:     org.ParentId,
 		Name:         org.Name,
@@ -139,33 +145,55 @@ func (r *OrganizationHandler) UpdateOrganization(c *gin.Context) {
 		Type:         org.Type,
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		response.WithError(c, err)
 		return
 	}
 
+	log.Info("UpdateOrganization function called")
 	response.Success(c, nil)
 }
 
-// @Summary 添加组织
-// @Description 添加组织、工资表
-// @Tags 组织管理
-// @Accept application/json
-// @Param Organization body Organization true ""
-// @Success 200 {object} response.SuccessMessage
-// @Router /v1/auth/organization/{id} [get]
-func (r *OrganizationHandler) GetOrganization(c *gin.Context) {
+func (oh *OrganizationHandler) GetOrganization(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := oh.logger.WithRequestId(ctx)
+	log.Info("GetOrganization function called")
+
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, "参数不完整")
+		log.Error("GetOrganization  id is empty")
+		response.ParamsError(c, idIsEmpty)
 		return
 	}
 
-	ctx := c.Request.Context()
-	sorg, err := r.org.GetOrganization(ctx, id)
+	sorg, err := oh.org.GetOrganization(ctx, id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		response.WithError(c, err)
 		return
 	}
 
+	log.Info("GetOrganization function success")
 	response.Success(c, sorg)
+}
+
+func (oh *OrganizationHandler) DeleteOrganization(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := oh.logger.WithRequestId(ctx)
+	log.Info("GetOrganization function called")
+
+	req := &RequestId{}
+	err :=  c.ShouldBindJSON(req)
+	if err != nil {
+		log.Error("DeleteOrganization ShouldBindJSON error: ", err.Error())
+		response.ParamsError(c, err.Error())
+		return
+	}
+
+	err = oh.org.DeleteOrganization(ctx, req.Id)
+	if err != nil {
+		response.WithError(c, err)
+		return
+	}
+
+	log.Info("DeleteOrganization function success")
+	response.Success(c, nil)
 }
