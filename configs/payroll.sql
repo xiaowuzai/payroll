@@ -35,23 +35,4 @@ INSERT INTO role_menu VALUES
     ('40c7b944-8c0a-421a-b3f4-b52c996b5524','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','76b18bdb-dadf-4a0d-b6fb-95cfe360e21a',NOW(), NOW()),
     ('40c7b944-8c0a-421a-b3f4-b52c996b1234','4fba1999-a7f9-4b34-b82a-b3f34cfe4d81','6d7fe0fb-4b98-450b-8e48-aac8a5809370',NOW(), NOW());
 
-DROP TABLE IF EXISTS `employee`;
-CREATE TABLE `employee` (
-    `id` varchar(36) NOT NULL,
-    `number` int unsigned NOT NULL,
-    `id_card` varchar(18) NOT NULL,
-    `telephone` varchar(11) NOT NULL,
-    `offer_time` timestamp NOT NULL,
-    `retire_time` timestamp,
-    `duty` varchar(24),
-    `post` varchar(24),
-    `level` varchar(24),
-    `base_salary` int,
-    `identity` tinyint(3),
-    `deleted` tinyint,
-    `created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp,
-    `updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-    PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 INSERT INTO `organization` VALUES ('16f5f7e7-e021-406c-9a8f-aeb2f136d518','','机关总部','.16f5f7e7-e021-406c-9a8f-aeb2f136d518', 0, 0, 0, 0, NOW(),NOW());

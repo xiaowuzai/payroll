@@ -161,7 +161,7 @@ func (oh *OrganizationHandler) GetOrganization(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		log.Error("GetOrganization  id is empty")
-		response.ParamsError(c, idIsEmpty)
+		response.ParamsError(c, ErrIdEmpty)
 		return
 	}
 

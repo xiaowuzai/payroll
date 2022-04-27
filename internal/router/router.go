@@ -15,6 +15,7 @@ type Router struct {
 	org  *handler.OrganizationHandler
 	user *handler.UserHandler
 	menu *handler.MenuHandler
+	employee *handler.EmployeeHandler
 }
 
 func NewRouter(role *handler.RoleHandler, org *handler.OrganizationHandler,
@@ -69,6 +70,10 @@ func (r *Router) WithEngine(engine *gin.Engine) {
 	user.DELETE("", r.user.DeleteUser)
 
 	// /v1/auth/employee
-	//employee := v1auth.Group("/employee")
-
+	employee := v1auth.Group("/employee")
+	employee.GET("", r.employee.ListEmployee)
+	employee.GET("/:id", r.employee.GetEmployee)
+	employee.POST("", r.employee.AddEmployee)
+	employee.PUT("", r.employee.UpdateEmployee)
+	employee.DELETE("", r.employee.DeleteEmployee)
 }

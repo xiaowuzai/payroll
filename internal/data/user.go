@@ -195,14 +195,14 @@ func (ur *userRepo) GetUser(ctx context.Context, id string) (*service.User, erro
 }
 
 type User struct {
-	Id          string    `xorm:"id pk varchar(36) notnull"`
-	Username    string    `xorm:"username varchar(45) unique"`     // 用户名
-	AccountName string    `xorm:"account_name varchar(20) unique"` // 用户帐号，用于登录
-	Email       string    `xorm:"email varchar(30)"`
-	RoleId      string    `xorm:"role_id varchar(36) notnull"` // Role.Id
-	Password    []byte    `xorm:"password varchar(20)"`        // default: 123456
-	Salt        []byte    `xorm:"salt varchar(255)"`
-	Status      int32     `xorm:"status"` // 0 正常、1 禁用
+	Id          string    `xorm:"pk varchar(36)"`
+	Username    string    `xorm:"varchar(45) unique"`     // 用户名
+	AccountName string    `xorm:"varchar(20) unique"` // 用户帐号，用于登录
+	Email       string    `xorm:"varchar(30)"`
+	RoleId      string    `xorm:"varchar(36) notnull"` // Role.Id
+	Password    []byte            // default: 123456
+	Salt        []byte
+	Status      int32     // 0 正常、1 禁用
 	Created     time.Time `xorm:"created"`
 	Updated     time.Time `xorm:"updated"`
 }
@@ -278,9 +278,11 @@ func (u *User) insert(ctx context.Context, session *xorm.Session, logger *logger
 
 func (u *User) get(ctx context.Context, session *xorm.Session, logger *logger.Logger) (bool, error) {
 	log := logger.WithRequestId(ctx)
-	log.Infof("User get input %+v\n", *u)
+	log.Infof("User get input %+v", *u)
 
-	has, err := session.Get(u)
+
+	user := &User{}
+	has, err := session.Where("account_name = ?", u.AccountName).Get(user)
 	if err != nil {
 		log.Error("User get error: ", err.Error())
 		return false, errors.ErrDataGet(err.Error())
@@ -303,6 +305,7 @@ func (u *User) list(ctx context.Context, session *xorm.Session, logger *logger.L
 	return users, nil
 }
 
+// 返回 password 和 salt
 func addSalt(password string) ([]byte, []byte) {
 	salt := uuid.CreatUUIDBinary()
 	sm := append([]byte(password), salt...)

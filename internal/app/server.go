@@ -20,7 +20,7 @@ func (s *Server) Start() {
 	}
 }
 
-func NewServer(engine *gin.Engine, apiRouter *router.Router, conf *config.Server) *Server {
+func NewServer(engine *gin.Engine, apiRouter *router.Router, conf *config.Payroll) *Server {
 	apiRouter.WithEngine(engine)
 	return &Server{
 		addr:      fmt.Sprintf("%s:%d", conf.Host, conf.Port),

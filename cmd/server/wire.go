@@ -14,7 +14,7 @@ import (
 	"github.com/xiaowuzai/payroll/internal/service"
 )
 
-func InitServer(conf *config.Server, database *config.Database) (*app.Server, error) {
+func InitServer(conf *config.Payroll, database *config.Database) (*app.Server, error) {
 	panic(wire.Build(
 		data.ProviderSet,
 		service.ProviderSet,

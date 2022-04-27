@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/xiaowuzai/payroll/internal/pkg/errors"
 	"github.com/xiaowuzai/payroll/internal/pkg/logger"
 	"github.com/xiaowuzai/payroll/internal/service"
@@ -168,6 +167,8 @@ func (rr *roleRepo) ListRole(ctx context.Context, userId string) ([]*service.Rol
 }
 
 func (rr *roleRepo) GetRole(ctx context.Context, userId, roleId string) (*service.Role, error) {
+	log := rr.logger.WithRequestId(ctx)
+
 	session, err := BeginSession(ctx, rr.data.db, rr.logger)
 	if err != nil {
 		return nil, err
@@ -227,9 +228,12 @@ func (r *Role) fromService(sRole *service.Role) {
 }
 
 func (r *Role) deleteRoleMenus(ctx context.Context, session *xorm.Session, logger *logger.Logger) error {
+	log := logger.WithRequestId(ctx)
+	log.Infof("deleteRoleMenus input role_id = %s\n", r.Id)
+
 	_, err := session.Where("role_id = ?", r.Id).Delete(&RoleMenu{})
 	if err != nil {
-		log.Println("deleteRoleMenus error: ", err.Error())
+		log.Error("deleteRoleMenus error: ", err.Error())
 		return errors.New("删除角色对应的权限失败")
 	}
 	return nil
@@ -237,7 +241,6 @@ func (r *Role) deleteRoleMenus(ctx context.Context, session *xorm.Session, logge
 
 func (r *Role) insertRoleMenus(ctx context.Context, session *xorm.Session, logger *logger.Logger, menus []string) error {
 	rmenus := make([]*RoleMenu, 0, len(menus))
-
 	for _, menuId := range menus {
 		if len(menuId) != len(uuid.CreateUUID()) {
 			return errors.New("插入数据出错")
