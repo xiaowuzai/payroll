@@ -16,15 +16,41 @@ type OrganizationService struct {
 	repo OrganizationRepo
 }
 
+// 工资表类型
+type FeeType int32
+
+const (
+	FType_PayRoll FeeType = 1 // 工资
+	FType_Boon    FeeType = 2 // 福利
+	FType_Retire  FeeType = 2 // 福利
+)
+
+// 员工类型
+type EmployeeType int32
+
+const (
+	EType_CivilServant EmployeeType = 1 // 公务员
+	EType_Institution  EmployeeType = 2 // 事业单位人员
+	EType_Enterprise   EmployeeType = 3 // 企业人员
+)
+
+// 组织机构类型
+type OrganizationType int32
+
+const (
+	OType_Organization OrganizationType = 1
+	OType_Payroll      OrganizationType = 2
+)
+
 type Organization struct {
-	Id           string          `json:"id"`
-	ParentId     string          `json:"parentId"`
-	Name         string          `json:"name"`
-	SalaryType   string          `json:"salaryType"`   // 工资类型 手动输入。
-	FeeType      int32           `json:"feeType"`      // 0:工资 1:福利 2: 退休
-	EmployeeType int32           `json:"employeeType"` // 员工类型： 0: 公务员  1:事业 2: 企业
-	Type         int32           `json:"type"`         // 0 单位、 1 工资表
-	Children     []*Organization `json:"children"`
+	Id           string           `json:"id"`
+	ParentId     string           `json:"parentId"`
+	Name         string           `json:"name"`
+	AliasName    string           `json:"aliasName"`    // 工资类型，手动输入，限制50个汉字。
+	FeeType      FeeType          `json:"feeType"`      // 1:工资 2:福利 3: 退休
+	EmployeeType EmployeeType     `json:"employeeType"` // 工资性质： 1: 公务员  2:事业 3: 企业
+	Type         OrganizationType `json:"type"`         // 1 单位、 2 工资表
+	Children     []*Organization  `json:"children"`
 }
 
 func NewOrganizationService(repo OrganizationRepo) *OrganizationService {

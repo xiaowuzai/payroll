@@ -14,21 +14,19 @@ import (
 var _ service.EmployeeRepo = (*EmployeeRepo)(nil)
 
 type EmployeeRepo struct {
-	data *Data
+	data   *Data
 	logger *logger.Logger
 }
 
-func NewEmployeeRepo(data *Data, logger *logger.Logger) service.EmployeeRepo{
+func NewEmployeeRepo(data *Data, logger *logger.Logger) service.EmployeeRepo {
 	return &EmployeeRepo{
-		data : data,
-		logger :logger,
+		data:   data,
+		logger: logger,
 	}
 }
 
-
-
-func (er *EmployeeRepo)AddEmployee(ctx context.Context, se *service.Employee) error{
-	session, err := BeginSession(ctx,er.data.db, er.logger)
+func (er *EmployeeRepo) AddEmployee(ctx context.Context, se *service.Employee) error {
+	session, err := BeginSession(ctx, er.data.db, er.logger)
 	if err != nil {
 		return err
 	}
@@ -43,10 +41,9 @@ func (er *EmployeeRepo)AddEmployee(ctx context.Context, se *service.Employee) er
 		return err
 	}
 
-
 	// 添加银行卡信息
 	payInfos := make([]*PayrollInfo, 0, len(se.PayrollInfos))
-	for _, spi :=  range se.PayrollInfos {
+	for _, spi := range se.PayrollInfos {
 
 		payInfo := &PayrollInfo{}
 		payInfo.fromService(spi)
@@ -65,7 +62,7 @@ func (er *EmployeeRepo)AddEmployee(ctx context.Context, se *service.Employee) er
 	return nil
 }
 
-func (er *EmployeeRepo)GetEmployeeList(ctx context.Context, name, organizationId string) ([]*service.Employee, error){
+func (er *EmployeeRepo) GetEmployeeList(ctx context.Context, name, organizationId string) ([]*service.Employee, error) {
 	session := NewSession(ctx, er.data.db)
 
 	employee := &Employee{}
@@ -75,7 +72,7 @@ func (er *EmployeeRepo)GetEmployeeList(ctx context.Context, name, organizationId
 	}
 
 	ses := make([]*service.Employee, 0, len(emps))
-	for _, v :=  range emps {
+	for _, v := range emps {
 		se := v.toService()
 		ses = append(ses, se)
 	}
@@ -83,7 +80,7 @@ func (er *EmployeeRepo)GetEmployeeList(ctx context.Context, name, organizationId
 	return ses, nil
 }
 
-func (er *EmployeeRepo)GetEmployee(ctx context.Context, id string) (*service.Employee, error){
+func (er *EmployeeRepo) GetEmployee(ctx context.Context, id string) (*service.Employee, error) {
 	session := NewSession(ctx, er.data.db)
 	log := er.logger.WithRequestId(ctx)
 	log.Infof("GetEmployee id = %s\n", id)
@@ -99,17 +96,15 @@ func (er *EmployeeRepo)GetEmployee(ctx context.Context, id string) (*service.Emp
 		return nil, errors.DataNotFound(message)
 	}
 
-
 	return employee.toService(), nil
 }
 
-func (er *EmployeeRepo)UpdateEmployee(ctx context.Context, se *service.Employee) error{
+func (er *EmployeeRepo) UpdateEmployee(ctx context.Context, se *service.Employee) error {
 	session, err := BeginSession(ctx, er.data.db, er.logger)
 	if err != nil {
 		return err
 	}
 	defer session.Close()
-
 
 	// 更新员工
 	emp := &Employee{}
@@ -127,7 +122,6 @@ func (er *EmployeeRepo)UpdateEmployee(ctx context.Context, se *service.Employee)
 		_ = session.Rollback()
 		return err
 	}
-
 
 	// 插入 payrollInfo
 	pis := make([]*PayrollInfo, 0, len(se.PayrollInfos))
@@ -148,7 +142,7 @@ func (er *EmployeeRepo)UpdateEmployee(ctx context.Context, se *service.Employee)
 	return nil
 }
 
-func (er *EmployeeRepo)DeleteEmployee(ctx context.Context, id string) error{
+func (er *EmployeeRepo) DeleteEmployee(ctx context.Context, id string) error {
 	session, err := BeginSession(ctx, er.data.db, er.logger)
 	if err != nil {
 		return err
@@ -175,7 +169,6 @@ func (er *EmployeeRepo)DeleteEmployee(ctx context.Context, id string) error{
 	return nil
 }
 
-
 type Employee struct {
 	Id         string    `xorm:"id varchar(36) notnull"`
 	IdCard     string    `xorm:"id_card varchar(18) notnull "` // 身份证号
@@ -185,11 +178,11 @@ type Employee struct {
 	Duty       string    `xorm:"duty varchar(32)"`   // 职务
 	Post       string    `xorm:"post  varchar(32)"`  // 岗位
 	Level      string    `xorm:"level  varchar(32)"` // 级别
-	Number     int       `xorm:"number int notnull"`           // 编号
-	BaseSalary int32     `xorm:"base_salary"`    // 基本工资
+	Number     int       `xorm:"number int notnull"` // 编号
+	BaseSalary int32     `xorm:"base_salary"`        // 基本工资
 	Identity   int32     `xorm:"identity"`           // 身份类型： 0:公务员、 1: 事业、2: 企业
-	Sex int32 `xorm:"sex"`
-	Status int32 `xorm:"status"`
+	Sex        int32     `xorm:"sex"`
+	Status     int32     `xorm:"status"`
 }
 
 func (e *Employee) toService() *service.Employee {
@@ -205,8 +198,8 @@ func (e *Employee) toService() *service.Employee {
 		Level:      e.Level,
 		BaseSalary: e.BaseSalary,
 		Identity:   e.Identity,
-		Sex : e.Sex,
-		Status : e.Status,
+		Sex:        e.Sex,
+		Status:     e.Status,
 	}
 }
 

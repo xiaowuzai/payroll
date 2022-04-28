@@ -19,4 +19,3 @@ func panicErr(err error) {
 		panic(err)
 	}
 }
-

@@ -19,8 +19,8 @@ type EmployeeService struct {
 
 type Employee struct {
 	Id           string
-	Name 		string  // 姓名
-	IdCard       string  // 身份证号码
+	Name         string // 姓名
+	IdCard       string // 身份证号码
 	Telephone    string // 手机号码
 	Duty         string // 职务
 	Post         string // 岗位
@@ -28,19 +28,25 @@ type Employee struct {
 	OfferTime    time.Time
 	RetireTime   time.Time
 	Number       int   // 员工编号
-	Sex int32 // 性别： 1: 男、2: 女
-	Status int32 // 状态 1: 在职、2: 离职 3: 退休
-	BaseSalary   int32  // 基本工资
-	Identity     int32  // 身份类别： 1:公务员、 2: 事业、3: 企业
+	Sex          int32 // 性别： 1: 男、2: 女
+	Status       int32 // 状态 1: 在职、2: 离职 3: 退休
+	BaseSalary   int32 // 基本工资
+	Identity     int32 // 身份类别： 1:公务员、 2: 事业、3: 企业
 	PayrollInfos []*PayrollInfo
 }
 
 type PayrollInfo struct {
 	Id             string `json:"id"`
-	EmployeeId       string `json:"employeeId"`
+	EmployeeId     string `json:"employeeId"`
 	BankId         string `json:"bankId"`
 	CardNumber     string `json:"cardNumber"`
 	OrganizationId string `json:"organizationId"`
+}
+
+func NewEmployeeService(repo EmployeeRepo )*EmployeeService{
+	return &EmployeeService{
+		repo: repo,
+	}
 }
 
 // 添加员工

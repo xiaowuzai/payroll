@@ -90,6 +90,9 @@ func (ur *userRepo) Login(ctx context.Context, accountName, passwd string) (*ser
 		return nil, nil, errors.DataNotFound("帐号不存在")
 	}
 
+	ur.logger.Infof("Login : accountName = %s, passwd = %s", accountName, passwd)
+
+	ur.logger.Infof("User : %+v", *user)
 	// 验证密码
 	if !validateUserPassword(append([]byte(passwd), user.Salt...), user.Password) {
 		return nil, nil, errors.New("密码错误")
@@ -195,14 +198,14 @@ func (ur *userRepo) GetUser(ctx context.Context, id string) (*service.User, erro
 }
 
 type User struct {
-	Id          string    `xorm:"pk varchar(36)"`
-	Username    string    `xorm:"varchar(45) unique"`     // 用户名
-	AccountName string    `xorm:"varchar(20) unique"` // 用户帐号，用于登录
-	Email       string    `xorm:"varchar(30)"`
-	RoleId      string    `xorm:"varchar(36) notnull"` // Role.Id
-	Password    []byte            // default: 123456
-	Salt        []byte
-	Status      int32     // 0 正常、1 禁用
+	Id          string    `xorm:"pk varchar(36)" json:"id"`
+	Username    string    `xorm:"varchar(45) unique" json:"username"`     // 用户名
+	AccountName string    `xorm:"varchar(20) unique" json:"account_name"` // 用户帐号，用于登录
+	Email       string    `xorm:"varchar(30)" json:"email"`
+	RoleId      string    `xorm:"varchar(36) notnull" json:"role_id"` // Role.Id
+	Password    []byte    `xorm:"blob" json:"password"`               // default: 123456
+	Salt        []byte    `xorm:"blob" json:"salt"`
+	Status      int32     `json:"status"` // 0 正常、1 禁用
 	Created     time.Time `xorm:"created"`
 	Updated     time.Time `xorm:"updated"`
 }
@@ -280,9 +283,7 @@ func (u *User) get(ctx context.Context, session *xorm.Session, logger *logger.Lo
 	log := logger.WithRequestId(ctx)
 	log.Infof("User get input %+v", *u)
 
-
-	user := &User{}
-	has, err := session.Where("account_name = ?", u.AccountName).Get(user)
+	has, err := session.Where("account_name = ?", u.AccountName).Get(u)
 	if err != nil {
 		log.Error("User get error: ", err.Error())
 		return false, errors.ErrDataGet(err.Error())

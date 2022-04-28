@@ -16,10 +16,16 @@ type Bank struct {
 	Name string
 }
 
+func NewBankService(repo BankRepo) *BankService {
+	return &BankService{
+		repo: repo,
+	}
+}
+
 func (bs *BankService) AddBank(ctx context.Context, bank *Bank) error {
 	return bs.repo.AddBank(ctx, bank)
 }
 
 func (bs *BankService) GetBankList(ctx context.Context) ([]*Bank, error) {
-	return bs.GetBankList(ctx)
+	return bs.repo.GetBankList(ctx)
 }

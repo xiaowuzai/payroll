@@ -6,25 +6,25 @@ import (
 )
 
 type Server struct {
-	Payroll *Payroll  `mapstructure:"payroll"`
+	Payroll  *Payroll  `mapstructure:"payroll"`
 	Database *Database `mapstructure:"database"`
 }
 
 type Payroll struct {
-	Host     string `mapstructure:"host"`
-	Port     int `mapstructure:"port"`
-	Name     string `mapstructure:"name"`
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+	Name string `mapstructure:"name"`
 }
 
 type Database struct {
-	Host     string  `mapstructure:"host"`
-	Username string  `mapstructure:"username"`
-	Passwd   string  `mapstructure:"passwd"`
+	Host     string `mapstructure:"host"`
+	Username string `mapstructure:"username"`
+	Passwd   string `mapstructure:"passwd"`
 	Port     int    `mapstructure:"port"`
-	ShowSQL  bool    `mapstructure:"showSQL"`
+	ShowSQL  bool   `mapstructure:"showSQL"`
 }
 
-func Parse() (*Server, error){
+func Parse() (*Server, error) {
 	//vipAll := viper.New()
 
 	vip := viper.New()
@@ -39,12 +39,12 @@ func Parse() (*Server, error){
 		panic(err)
 	}
 	defaults := vip.AllSettings()
-	for k, v :=  range defaults{
+	for k, v := range defaults {
 		vip.SetDefault(k, v)
 	}
 
 	env := os.Getenv("CONF_LEVEL")
-	if env != "" && env != "local"{
+	if env != "" && env != "local" {
 		vip.SetConfigName(env)
 		err = vip.ReadInConfig()
 		if err != nil {
@@ -52,7 +52,7 @@ func Parse() (*Server, error){
 		}
 
 		envConf := vip.AllSettings()
-		for k, v :=  range envConf{
+		for k, v := range envConf {
 			vip.SetDefault(k, v)
 		}
 	}

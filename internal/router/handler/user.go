@@ -190,7 +190,6 @@ func (uh *UserHandler) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-
 func (uh *UserHandler) DeleteUser(c *gin.Context) {
 	ctx := requestid.WithRequestId(c)
 	log := uh.logger.WithRequestId(ctx)

@@ -11,20 +11,23 @@ import (
 var ProviderSet = wire.NewSet(NewRouter)
 
 type Router struct {
-	role *handler.RoleHandler
-	org  *handler.OrganizationHandler
-	user *handler.UserHandler
-	menu *handler.MenuHandler
+	role     *handler.RoleHandler
+	org      *handler.OrganizationHandler
+	user     *handler.UserHandler
+	menu     *handler.MenuHandler
 	employee *handler.EmployeeHandler
+	bank *handler.BankHandler
 }
 
 func NewRouter(role *handler.RoleHandler, org *handler.OrganizationHandler,
-	user *handler.UserHandler, menu *handler.MenuHandler) *Router {
+	user *handler.UserHandler, menu *handler.MenuHandler, employee *handler.EmployeeHandler, bank *handler.BankHandler) *Router {
 	return &Router{
 		role: role,
 		org:  org,
 		user: user,
 		menu: menu,
+		employee: employee,
+		bank: bank,
 	}
 }
 
@@ -76,4 +79,8 @@ func (r *Router) WithEngine(engine *gin.Engine) {
 	employee.POST("", r.employee.AddEmployee)
 	employee.PUT("", r.employee.UpdateEmployee)
 	employee.DELETE("", r.employee.DeleteEmployee)
+
+	// /v1/auth/bank
+	bank := v1auth.Group("/bank")
+	bank.GET("", r.bank.ListBank)
 }

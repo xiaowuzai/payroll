@@ -18,6 +18,18 @@ type Bank struct {
 	Name string `json:"name"`
 }
 
+func (b *Bank)toService() *service.Bank{
+	return &service.Bank{
+		Id: b.Id,
+		Name: b.Name,
+	}
+}
+
+func (b *Bank) fromService(bs *service.Bank) {
+	b.Id = bs.Id
+	b.Name = bs.Name
+}
+
 func NewBankHandler(bank *service.BankService, logger *logger.Logger) *BankHandler {
 	return &BankHandler{
 		bank:   bank,
@@ -38,9 +50,7 @@ func (bh *BankHandler) AddBank(c *gin.Context) {
 		return
 	}
 
-	err = bh.bank.AddBank(ctx, &service.Bank{
-		Name: req.Name,
-	})
+	err = bh.bank.AddBank(ctx, req.toService())
 	if err != nil {
 		response.WithError(c, err)
 		return
@@ -48,4 +58,26 @@ func (bh *BankHandler) AddBank(c *gin.Context) {
 
 	log.Info("AddBank function success")
 	response.Success(c, nil)
+}
+
+func (bh *BankHandler) ListBank(c *gin.Context) {
+	ctx := requestid.WithRequestId(c)
+	log := bh.logger.WithRequestId(ctx)
+	log.Info("ListBank function called")
+
+	sbs, err := bh.bank.GetBankList(ctx)
+	if err != nil {
+		response.WithError(c, err)
+		return
+	}
+
+	data := make([]*Bank, 0, len(sbs))
+	for _, v := range sbs {
+		bank := &Bank{}
+		bank.fromService(v)
+		data = append(data, bank)
+	}
+
+	log.Info("AddBank function success")
+	response.Success(c, data)
 }

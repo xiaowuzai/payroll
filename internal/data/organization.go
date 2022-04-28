@@ -28,14 +28,14 @@ func NewOrganizationRepo(data *Data, logger *logger.Logger) service.Organization
 type Organization struct {
 	Id           string    `xorm:"id varchar(36) pk"`
 	ParentId     string    `xorm:"parent_id varchar(36) notnull"`
-	Name         string    `xorm:"name varchar(255)  notnull"`
+	Name         string    `xorm:"name varchar(255)  unique"`
 	Path         string    `xorm:"path varchar(255) notnull"` // .ParentId.Id
-	SalaryType   string    `xorm:"salary_type varchar(36)"`   //   工资类型：手动输入
+	AliasName    string    `xorm:"varchar(36)"`               //   工资类型：手动输入
 	Created      time.Time `xorm:"created"`
 	Updated      time.Time `xorm:"updated"`
-	FeeType      int32     `xorm:"fee_type int notnull"`      // 0:工资 1:福利 2: 退休    费用类型
-	Type         int32     `xorm:"type int notnull"`          // 0 单位、 1 工资表
-	EmployeeType int32     `xorm:"employee_type int notnull"` // 员工类型： 0: 公务员  1:事业 2: 企业
+	FeeType      int32     `xorm:"fee_type"` // 1:工资 2:福利 3: 退休    费用类型
+	Type         int32     `xorm:"notnull"`  // 1 单位、 2 工资表
+	EmployeeType int32     `xorm:"notnull"`  // 员工类型： 1: 公务员  2:事业 3: 企业
 }
 
 func (org *Organization) toService() *service.Organization {
@@ -43,20 +43,21 @@ func (org *Organization) toService() *service.Organization {
 		Id:           org.Id,
 		ParentId:     org.ParentId,
 		Name:         org.Name,
-		Type:         org.Type,
-		SalaryType:   org.SalaryType,
-		FeeType:      org.FeeType,
-		EmployeeType: org.EmployeeType,
+		Type:         service.OrganizationType(org.Type),
+		AliasName:    org.AliasName,
+		FeeType:      service.FeeType(org.FeeType),
+		EmployeeType: service.EmployeeType(org.EmployeeType),
 	}
 }
 
 func (org *Organization) fromService(so *service.Organization) {
 	org.Id = so.Id
-	org.EmployeeType = so.EmployeeType
-	org.SalaryType = so.SalaryType
-	org.Type = so.Type
+	org.EmployeeType = int32(so.EmployeeType)
+	org.AliasName = so.AliasName
+	org.Type = int32(so.Type)
 	org.ParentId = so.ParentId
 	org.Name = so.Name
+	org.FeeType = int32(so.FeeType)
 }
 
 func (or *organizationRepo) ListOrganization(ctx context.Context) ([]*service.Organization, error) {
@@ -81,11 +82,7 @@ func (or *organizationRepo) AddOrganization(ctx context.Context, sorg *service.O
 		return errParent
 	}
 
-	session, err := BeginSession(ctx, or.data.db, or.logger)
-	if err != nil {
-		return err
-	}
-	defer session.Close()
+	session := NewSession(ctx, or.data.db)
 
 	// 查看父节点是否存在
 	parent := &Organization{
@@ -93,11 +90,13 @@ func (or *organizationRepo) AddOrganization(ctx context.Context, sorg *service.O
 	}
 	has, err := parent.get(ctx, session, or.logger)
 	if err != nil {
-		_ = session.Rollback()
 		return err
 	}
 	if !has {
-		_ = session.Rollback()
+		return errParent
+	}
+	// 父节点不是组织机构类型，不能添加子节点
+	if parent.Type != 1 {
 		return errParent
 	}
 

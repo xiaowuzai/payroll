@@ -1,6 +1,7 @@
 package handler
 
 import (
+	//"github.com/go-playground/validator/v10"
 	"github.com/gin-gonic/gin"
 	"github.com/xiaowuzai/payroll/internal/pkg/logger"
 	"github.com/xiaowuzai/payroll/internal/pkg/requestid"
@@ -8,7 +9,6 @@ import (
 	"github.com/xiaowuzai/payroll/internal/service"
 	"net/http"
 )
-
 
 type OrganizationHandler struct {
 	org    *service.OrganizationService
@@ -23,13 +23,13 @@ func NewOrganizationHandler(org *service.OrganizationService, logger *logger.Log
 }
 
 type Organization struct {
-	Id           string          `json:"id"`
+	Id           string          `json:"id" binding:"omitempty,uuid"`
 	Name         string          `json:"name" binding:"required"`
-	ParentId     string          `json:"parentId" binding:"required"`
-	SalaryType   string          `json:"salaryType"`   //   工资类型
-	Type         int32           `json:"type"`         // 0 单位、 1 工资表
-	FeeType      int32           `json:"feeType"`      // 0:工资 1:福利 2: 退休    费用类型
-	EmployeeType int32           `json:"employeeType"` // 员工类型： 0: 公务员  1:事业 2: 企业
+	ParentId     string          `json:"parentId" binding:"required,uuid"`
+	AliasName    string          `json:"aliasName"`                                    //   工资表别名
+	Type         int32           `json:"type" binding:"required,gte=1,lte=2"`          // 1 单位、 2 工资表
+	FeeType      int32           `json:"feeType" binding:"omitempty,gte=1,lte=3"`      // 1:工资 2:福利 3: 退休    费用类型
+	EmployeeType int32           `json:"employeeType" binding:"omitempty,gte=1,lte=3"` // 员工类型： 1: 公务员  2:事业 3: 企业
 	Children     []*Organization `json:"children"`
 }
 
@@ -38,9 +38,10 @@ func (org *Organization) toService() *service.Organization {
 		Id:           org.Id,
 		Name:         org.Name,
 		ParentId:     org.ParentId,
-		Type:         org.Type,
-		SalaryType:   org.SalaryType,
-		EmployeeType: org.EmployeeType,
+		Type:         service.OrganizationType(org.Type),
+		AliasName:    org.AliasName,
+		EmployeeType: service.EmployeeType(org.EmployeeType),
+		FeeType:      service.FeeType(org.FeeType),
 	}
 }
 
@@ -48,9 +49,10 @@ func (org *Organization) fromService(so *service.Organization) {
 	org.Id = so.Id
 	org.Name = so.Name
 	org.ParentId = so.ParentId
-	org.Type = so.Type
-	org.SalaryType = so.SalaryType
-	org.EmployeeType = so.EmployeeType
+	org.Type = int32(so.Type)
+	org.AliasName = so.AliasName
+	org.EmployeeType = int32(so.EmployeeType)
+	org.FeeType = int32(so.FeeType)
 }
 
 // @Summary 获取组织列表
@@ -94,13 +96,9 @@ func (oh *OrganizationHandler) AddOrganization(c *gin.Context) {
 		return
 	}
 
-	err = oh.org.AddOrganization(ctx, &service.Organization{
-		ParentId:     org.ParentId,
-		Name:         org.Name,
-		SalaryType:   org.SalaryType,   // 0:工资 1:福利 2: 退休    工资类型
-		EmployeeType: org.EmployeeType, // 员工类型： 0: 公务员  1:事业 2: 企业
-		Type:         org.Type,
-	})
+	so := org.toService()
+
+	err = oh.org.AddOrganization(ctx, so)
 	if err != nil {
 		response.WithError(c, err)
 		return
@@ -135,15 +133,8 @@ func (oh *OrganizationHandler) UpdateOrganization(c *gin.Context) {
 		return
 	}
 
-
-	err = oh.org.UpdateOrganization(ctx, &service.Organization{
-		Id:           org.Id,
-		ParentId:     org.ParentId,
-		Name:         org.Name,
-		SalaryType:   org.SalaryType,   // 0:工资 1:福利 2: 退休    工资类型
-		EmployeeType: org.EmployeeType, // 员工类型： 0: 公务员  1:事业 2: 企业
-		Type:         org.Type,
-	})
+	so := org.toService()
+	err = oh.org.UpdateOrganization(ctx, so)
 	if err != nil {
 		response.WithError(c, err)
 		return
@@ -181,7 +172,7 @@ func (oh *OrganizationHandler) DeleteOrganization(c *gin.Context) {
 	log.Info("GetOrganization function called")
 
 	req := &RequestId{}
-	err :=  c.ShouldBindJSON(req)
+	err := c.ShouldBindJSON(req)
 	if err != nil {
 		log.Error("DeleteOrganization ShouldBindJSON error: ", err.Error())
 		response.ParamsError(c, err.Error())

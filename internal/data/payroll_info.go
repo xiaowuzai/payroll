@@ -10,18 +10,18 @@ import (
 
 type PayrollInfo struct {
 	Id             string `json:"id"`
-	EmployeeId       string `json:"employeeId"`
+	EmployeeId     string `json:"employeeId"`
 	BankId         string `json:"bankId"`
 	CardNumber     string `json:"cardNumber"`
 	OrganizationId string `json:"organizationId"`
 }
 
-func (pi *PayrollInfo) toService() *service.PayrollInfo{
+func (pi *PayrollInfo) toService() *service.PayrollInfo {
 	return &service.PayrollInfo{
-		Id  : pi.Id,
-		EmployeeId   : pi.EmployeeId,
-		BankId       : pi.BankId,
-		CardNumber   : pi.CardNumber,
+		Id:             pi.Id,
+		EmployeeId:     pi.EmployeeId,
+		BankId:         pi.BankId,
+		CardNumber:     pi.CardNumber,
 		OrganizationId: pi.OrganizationId,
 	}
 }
@@ -29,9 +29,9 @@ func (pi *PayrollInfo) toService() *service.PayrollInfo{
 func (pi *PayrollInfo) fromService(spi *service.PayrollInfo) {
 	pi.Id = spi.Id
 	pi.EmployeeId = spi.EmployeeId
-	pi.BankId        = spi.BankId
-	pi.CardNumber    = spi.CardNumber
-	pi.OrganizationId= spi.OrganizationId
+	pi.BankId = spi.BankId
+	pi.CardNumber = spi.CardNumber
+	pi.OrganizationId = spi.OrganizationId
 }
 
 func (pi *PayrollInfo) list(ctx context.Context, session *xorm.Session, logger *logger.Logger, employeeId string) ([]*PayrollInfo, error) {

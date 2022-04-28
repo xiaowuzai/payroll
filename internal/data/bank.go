@@ -12,8 +12,8 @@ import (
 var _ service.BankRepo = (*BankRepo)(nil)
 
 type Bank struct {
-	Id      string    `xorm:"id varchar(36) pk notnull"`
-	Name    string    `xorm:"name varchar(36) unique notnull"`
+	Id      string    `xorm:"varchar(36) pk"`
+	Name    string    `xorm:"unique"`
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`
 }
@@ -23,7 +23,7 @@ type BankRepo struct {
 	logger *logger.Logger
 }
 
-func NewBankRepo(data *Data, logger *logger.Logger) *BankRepo {
+func NewBankRepo(data *Data, logger *logger.Logger) service.BankRepo {
 	return &BankRepo{
 		data:   data,
 		logger: logger,

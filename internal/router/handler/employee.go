@@ -10,87 +10,87 @@ import (
 )
 
 type EmployeeHandler struct {
-	emp *service.EmployeeService
+	emp    *service.EmployeeService
 	logger *logger.Logger
 }
 
-func NewEmployeeHandler(emp *service.EmployeeService, logger *logger.Logger) *EmployeeHandler{
-	return 	&EmployeeHandler{
-		emp: emp,
-		logger : logger,
+func NewEmployeeHandler(emp *service.EmployeeService, logger *logger.Logger) *EmployeeHandler {
+	return &EmployeeHandler{
+		emp:    emp,
+		logger: logger,
 	}
 }
+
 type Employee struct {
-	Id           string `json:"id"`
-	Name 		 string  `json:"name" binding:"required"` // 姓名
-	IdCard       string  `json:"idCard" binding:"required"` // 身份证号码
-	Telephone    string  `json:"telephone"`// 手机号码
-	Duty         string  `json:"duty"`// 职务
-	Post         string   `json:"post"`// 岗位
-	Level        string   `json:"level"`// 级别
-	OfferTime    int64  `json:"offerTime"`
-	RetireTime   int64  `json:"retireTime"`
-	Number       int    `json:"number"` // 员工编号
-	Sex int32   `json:"sex"`// 性别： 1: 男、2: 女
-	Status int32 `json:"status" binding:"required"` // 1: 在职, 2:离职、 3: 退休
-	BaseSalary   int32    `json:"baseSalary"`// 基本工资
-	Identity     int32  `json:"identity"`  // 身份类别： 1:公务员、 2: 事业、3: 企业
-	PayrollInfos []*PayrollInfo  `json:"payrollInfos"`
+	Id           string         `json:"id"`
+	Name         string         `json:"name" binding:"required"`   // 姓名
+	IdCard       string         `json:"idCard" binding:"required"` // 身份证号码
+	Telephone    string         `json:"telephone"`                 // 手机号码
+	Duty         string         `json:"duty"`                      // 职务
+	Post         string         `json:"post"`                      // 岗位
+	Level        string         `json:"level"`                     // 级别
+	OfferTime    int64          `json:"offerTime"`
+	RetireTime   int64          `json:"retireTime"`
+	Number       int            `json:"number"`                    // 员工编号
+	Sex          int32          `json:"sex"`                       // 性别： 1: 男、2: 女
+	Status       int32          `json:"status" binding:"required"` // 1: 在职, 2:离职、 3: 退休
+	BaseSalary   int32          `json:"baseSalary"`                // 基本工资
+	Identity     int32          `json:"identity"`                  // 身份类别： 1:公务员、 2: 事业、3: 企业
+	PayrollInfos []*PayrollInfo `json:"payrollInfos" binding:"required"`
 }
 
 type PayrollInfo struct {
 	Id             string `json:"id"`
-	EmployeeId     string `json:"employeeId" binding:"required"`
 	BankId         string `json:"bankId" binding:"required"`
 	CardNumber     string `json:"cardNumber" binding:"required"`
 	OrganizationId string `json:"organizationId" binding:"required"`
 }
 
-func (e *Employee) toService () *service.Employee{
+func (e *Employee) toService() *service.Employee {
 	return &service.Employee{
-		Id      : e.Id,
-		Name 	: e.Name,
-		IdCard    : e.IdCard,
-		Telephone   : e.Telephone,
-		Duty         : e.Duty,
-		Post       : e.Post,
-		Level        : e.Level,
-		OfferTime    : time.Unix(e.OfferTime,0),
-		RetireTime   : time.Unix(e.RetireTime,0),
-		Number     : e.Number,
-		Sex :  e.Sex,
-		Status: e.Status,
-		BaseSalary   : e.BaseSalary,
-		Identity     : e.Identity,
+		Id:         e.Id,
+		Name:       e.Name,
+		IdCard:     e.IdCard,
+		Telephone:  e.Telephone,
+		Duty:       e.Duty,
+		Post:       e.Post,
+		Level:      e.Level,
+		OfferTime:  time.Unix(e.OfferTime, 0),
+		RetireTime: time.Unix(e.RetireTime, 0),
+		Number:     e.Number,
+		Sex:        e.Sex,
+		Status:     e.Status,
+		BaseSalary: e.BaseSalary,
+		Identity:   e.Identity,
 	}
 }
 
-func (e *Employee)fromService(se *service.Employee) {
-	e.Id    = se.Id
-	e.Name 		= se.Name
-	e.IdCard      = se.IdCard
-	e.Telephone  = se.Telephone
-	e.Duty        = se.Duty
-	e.Post        = se.Post
-	e.Level       = se.Level
-	e.OfferTime   = se.OfferTime.Unix()
-	e.RetireTime  = se.RetireTime.Unix()
-	e.Number      = se.Number
+func (e *Employee) fromService(se *service.Employee) {
+	e.Id = se.Id
+	e.Name = se.Name
+	e.IdCard = se.IdCard
+	e.Telephone = se.Telephone
+	e.Duty = se.Duty
+	e.Post = se.Post
+	e.Level = se.Level
+	e.OfferTime = se.OfferTime.Unix()
+	e.RetireTime = se.RetireTime.Unix()
+	e.Number = se.Number
 	e.Sex = se.Sex
 	e.Status = se.Status
-	e.BaseSalary  = se.BaseSalary
-	e.Identity     = se.Identity
+	e.BaseSalary = se.BaseSalary
+	e.Identity = se.Identity
 
 	if se.PayrollInfos != nil {
 		for _, v := range se.PayrollInfos {
 			e.PayrollInfos = append(e.PayrollInfos, &PayrollInfo{
-				Id      : v.Id,
-				EmployeeId    : v.EmployeeId,
-				BankId       : v.BankId,
-				CardNumber    : v.CardNumber,
+				Id:             v.Id,
+				//EmployeeId:     v.EmployeeId,
+				BankId:         v.BankId,
+				CardNumber:     v.CardNumber,
 				OrganizationId: v.OrganizationId,
 			})
-		}	
+		}
 	}
 }
 
@@ -107,7 +107,7 @@ func (eh *EmployeeHandler) AddEmployee(c *gin.Context) {
 		return
 	}
 
-	se :=  req.toService()
+	se := req.toService()
 	log.Infof("AddEmployee toService %+v\n", *se)
 	err = eh.emp.AddEmployee(ctx, se)
 	if err != nil {
@@ -161,7 +161,7 @@ func (eh *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 		return
 	}
 
-	se :=  req.toService()
+	se := req.toService()
 	log.Infof("UpdateEmployee toService %+v\n", *se)
 	err = eh.emp.UpdateEmployee(ctx, se)
 	if err != nil {
@@ -201,16 +201,12 @@ func (eh *EmployeeHandler) GetEmployee(c *gin.Context) {
 
 func (eh *EmployeeHandler) ListEmployee(c *gin.Context) {
 	ctx := requestid.WithRequestId(c)
+
 	log := eh.logger.WithRequestId(ctx)
 	log.Info("ListEmployee function called")
 
 	name := c.Query("name")
 	organizationId := c.Query("organizationId")
-	if name == "" || organizationId == "" {
-		log.Error("ListEmployee  error: ", "参数不对")
-		response.ParamsError(c, "name 或者 organizationId 不存在")
-		return
-	}
 
 	log.Infof("ListEmployee name = %s, organizationId = %s\n", name, organizationId)
 	ses, err := eh.emp.ListEmployee(ctx, name, organizationId)
@@ -229,12 +225,3 @@ func (eh *EmployeeHandler) ListEmployee(c *gin.Context) {
 	log.Info("ListEmployee function success")
 	response.Success(c, es)
 }
-
-
-
-
-
-
-
-
-
