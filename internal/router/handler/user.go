@@ -48,7 +48,7 @@ func (u *User) toService() *service.User {
 func (u *User) fromService(su *service.User) {
 	u.Id = su.Id
 	u.Username = su.Username
-	u.AccountName = su.Username
+	u.AccountName = su.AccountName
 	u.Email = su.Email
 	u.RoleId = su.RoleId
 	u.RoleName = su.RoleName
@@ -56,13 +56,6 @@ func (u *User) fromService(su *service.User) {
 	u.Created = su.Created.Unix()
 }
 
-// @Summary 添加用户
-// @Description 添加用户时指定角色
-// @Tags 用户管理
-// @Accept application/json
-// @Param User body User true ""
-// @Success 200 {object} response.Result ""
-// @Router /v1/auth/user [post]
 func (uh *UserHandler) AddUser(c *gin.Context) {
 	ctx := requestid.WithRequestId(c)
 	log := uh.logger.WithRequestId(ctx)
@@ -89,7 +82,7 @@ func (uh *UserHandler) AddUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	response.Success(c,nil)
 }
 
 func (uh *UserHandler) AddAdmin(c *gin.Context) {
@@ -187,7 +180,7 @@ func (uh *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	log.Info("UpdateUser function success")
-	c.JSON(http.StatusOK, nil)
+	response.Success(c,nil)
 }
 
 func (uh *UserHandler) DeleteUser(c *gin.Context) {
@@ -215,5 +208,5 @@ func (uh *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	log.Info("DeleteUser function success")
-	c.JSON(http.StatusOK, nil)
+	response.Success(c, nil)
 }

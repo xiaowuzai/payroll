@@ -46,7 +46,7 @@ type Organization struct {
 	Id           string           `json:"id"`
 	ParentId     string           `json:"parentId"`
 	Name         string           `json:"name"`
-	AliasName    string           `json:"aliasName"`    // 工资类型，手动输入，限制50个汉字。
+	AliasName    []string           `json:"aliasName"`    // 工资类型，手动输入，限制50个汉字。
 	FeeType      FeeType          `json:"feeType"`      // 1:工资 2:福利 3: 退休
 	EmployeeType EmployeeType     `json:"employeeType"` // 工资性质： 1: 公务员  2:事业 3: 企业
 	Type         OrganizationType `json:"type"`         // 1 单位、 2 工资表

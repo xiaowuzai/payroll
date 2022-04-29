@@ -62,7 +62,7 @@ func (r *Router) WithEngine(engine *gin.Engine) {
 	organization.POST("", r.org.AddOrganization)
 	organization.PUT("", r.org.UpdateOrganization)
 	organization.GET("/:id", r.org.GetOrganization)
-	organization.DELETE("/:id", r.org.DeleteOrganization)
+	organization.DELETE("", r.org.DeleteOrganization)
 
 	// /v1/auth/user
 	user := v1auth.Group("/user")

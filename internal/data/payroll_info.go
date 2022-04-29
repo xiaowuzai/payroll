@@ -9,11 +9,11 @@ import (
 )
 
 type PayrollInfo struct {
-	Id             string `json:"id"`
-	EmployeeId     string `json:"employeeId"`
-	BankId         string `json:"bankId"`
-	CardNumber     string `json:"cardNumber"`
-	OrganizationId string `json:"organizationId"`
+	Id             string `xorm:"varchar(36) pk"`
+	EmployeeId     string `xorm:"varchar(36) notnull"`
+	BankId         string `xorm:"varchar(36) notnull"`
+	CardNumber     string `xorm:"varchar(20) notnull unique"`
+	OrganizationId string `xorm:"varchar(36) notnull"`
 }
 
 func (pi *PayrollInfo) toService() *service.PayrollInfo {
@@ -72,4 +72,17 @@ func (pi *PayrollInfo) deleteByEmployeeId(ctx context.Context, session *xorm.Ses
 	}
 
 	return nil
+}
+
+func (pi *PayrollInfo) listByOrgId(ctx context.Context, session *xorm.Session, logger *logger.Logger, organizationId string) ([]*PayrollInfo, error) {
+	log := logger.WithRequestId(ctx)
+	log.Infof("PayrollInfo list input employee_id = %s\n", organizationId)
+
+	infos := make([]*PayrollInfo, 0)
+	err := session.Where("organization_id = ?", organizationId).Find(&infos)
+	if err != nil {
+		return nil, errors.ErrDataGet(err.Error())
+	}
+
+	return infos, nil
 }

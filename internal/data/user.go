@@ -34,6 +34,7 @@ func (ur *userRepo) AddUser(ctx context.Context, su *service.User) error {
 
 	u := &User{}
 	u.fromService(su)
+	u.Id = uuid.CreateUUID()
 	u.Password = passwd
 	u.Salt = salt
 
@@ -198,7 +199,7 @@ func (ur *userRepo) GetUser(ctx context.Context, id string) (*service.User, erro
 }
 
 type User struct {
-	Id          string    `xorm:"pk varchar(36)" json:"id"`
+	Id          string    `xorm:"pk varchar(36) notnull" json:"id"`
 	Username    string    `xorm:"varchar(45) unique" json:"username"`     // 用户名
 	AccountName string    `xorm:"varchar(20) unique" json:"account_name"` // 用户帐号，用于登录
 	Email       string    `xorm:"varchar(30)" json:"email"`
@@ -259,7 +260,7 @@ func (u *User) delete(ctx context.Context, session *xorm.Session, logger *logger
 	log := logger.WithRequestId(ctx)
 	log.Info("User delete input %+v\n", *u)
 
-	_, err := session.ID(u.Id).Delete(u)
+	_, err := session.Delete(u)
 	if err != nil {
 		log.Error("User delete error:  ", err.Error())
 		return errors.ErrDataDelete(err.Error())
@@ -283,7 +284,7 @@ func (u *User) get(ctx context.Context, session *xorm.Session, logger *logger.Lo
 	log := logger.WithRequestId(ctx)
 	log.Infof("User get input %+v", *u)
 
-	has, err := session.Where("account_name = ?", u.AccountName).Get(u)
+	has, err := session.Get(u)
 	if err != nil {
 		log.Error("User get error: ", err.Error())
 		return false, errors.ErrDataGet(err.Error())

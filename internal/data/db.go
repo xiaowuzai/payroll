@@ -32,6 +32,8 @@ func NewDB(conf *config.Database, logger *logger.Logger) (*xorm.Engine, error) {
 		new(Organization),
 		new(Role),
 		new(User),
+		new(PayrollInfo),
+		new(PayrollAlias),
 	)
 	if err != nil {
 		logger.Error("NewDB Sync table error: ", err.Error())
@@ -189,7 +191,6 @@ func (initData *InitData)initOrganization (session *xorm.Session)error {
 		Path:  "."+id,
 		ParentId:     "root",
 		Name:         "机关总部",
-		AliasName:    "",                                      //   工资类型：手动输入
 		FeeType:      1,                                       // 1:工资 2:福利 3: 退休    费用类型
 		Type:         1,                                       // 1 单位、 2 工资表
 		EmployeeType: 1,                                       // 员工类型： 1: 公务员  2:事业 3: 企业

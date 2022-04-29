@@ -26,7 +26,7 @@ type Organization struct {
 	Id           string          `json:"id" binding:"omitempty,uuid"`
 	Name         string          `json:"name" binding:"required"`
 	ParentId     string          `json:"parentId" binding:"required,uuid"`
-	AliasName    string          `json:"aliasName"`                                    //   工资表别名
+	AliasName    []string         `json:"aliasName" binding:"required"`                                    //   工资表别名
 	Type         int32           `json:"type" binding:"required,gte=1,lte=2"`          // 1 单位、 2 工资表
 	FeeType      int32           `json:"feeType" binding:"omitempty,gte=1,lte=3"`      // 1:工资 2:福利 3: 退休    费用类型
 	EmployeeType int32           `json:"employeeType" binding:"omitempty,gte=1,lte=3"` // 员工类型： 1: 公务员  2:事业 3: 企业
@@ -96,6 +96,7 @@ func (oh *OrganizationHandler) AddOrganization(c *gin.Context) {
 		return
 	}
 
+	log.Infof("AddOrganization input %+v", *org)
 	so := org.toService()
 
 	err = oh.org.AddOrganization(ctx, so)
