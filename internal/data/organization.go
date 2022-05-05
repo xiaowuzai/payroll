@@ -223,7 +223,7 @@ func (or *organizationRepo) DeleteOrganization(ctx context.Context, id string) e
 		}
 	}else {  // 如果是工资类型
 		// 查看是否有员工属于该工资表
-		payInfo := &PayrollInfo{}
+		payInfo := &EmployeeBankInfo{}
 		payInfos, err := payInfo.listByOrgId(ctx, session, or.logger, org.Id)
 		if err != nil {
 			return err

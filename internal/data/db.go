@@ -32,7 +32,7 @@ func NewDB(conf *config.Database, logger *logger.Logger) (*xorm.Engine, error) {
 		new(Organization),
 		new(Role),
 		new(User),
-		new(PayrollInfo),
+		new(EmployeeBankInfo),
 		new(PayrollAlias),
 	)
 	if err != nil {

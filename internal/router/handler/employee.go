@@ -22,9 +22,9 @@ func NewEmployeeHandler(emp *service.EmployeeService, logger *logger.Logger) *Em
 }
 
 type Employee struct {
-	Id           string         `json:"id"`
-	Name         string         `json:"name" binding:"required"`   // 姓名
-	IdCard       string         `json:"idCard" binding:"required"` // 身份证号码
+	Id           string         `json:"id" binding:"omitempty,uuid"`
+	Name         string         `json:"name" binding:"required,lte=20"`   // 姓名
+	IdCard       string         `json:"idCard" binding:"required,len=18"` // 身份证号码
 	Telephone    string         `json:"telephone"`                 // 手机号码
 	Duty         string         `json:"duty"`                      // 职务
 	Post         string         `json:"post"`                      // 岗位
@@ -32,21 +32,31 @@ type Employee struct {
 	OfferTime    int64          `json:"offerTime"`
 	RetireTime   int64          `json:"retireTime"`
 	Number       int            `json:"number"`                    // 员工编号
-	Sex          int32          `json:"sex"`                       // 性别： 1: 男、2: 女
-	Status       int32          `json:"status" binding:"required"` // 1: 在职, 2:离职、 3: 退休
+	Sex          int32          `json:"sex" binding:"oneof=1 2"`                       // 性别： 1: 男、2: 女
+	Status       int32          `json:"status"  binding:"oneof=1 2 3"` // 1: 在职, 2:离职、 3: 退休
 	BaseSalary   int32          `json:"baseSalary"`                // 基本工资
-	Identity     int32          `json:"identity"`                  // 身份类别： 1:公务员、 2: 事业、3: 企业
-	PayrollInfos []*PayrollInfo `json:"payrollInfos" binding:"required"`
+	Identity     int32          `json:"identity" binding:"oneof=1 2 3"`                  // 身份类别： 1:公务员、 2: 事业、3: 企业
+	EmployeeBankInfos []*EmployeeBankInfo `json:"employeeBankInfos" binding:"required"`
 }
 
-type PayrollInfo struct {
-	Id             string `json:"id"`
-	BankId         string `json:"bankId" binding:"required"`
+type EmployeeBankInfo struct {
+	Id             string `json:"id" binding:"omitempty,uuid"`
+	BankId         string `json:"bankId" binding:"uuid"`
 	CardNumber     string `json:"cardNumber" binding:"required"`
-	OrganizationId string `json:"organizationId" binding:"required"`
+	OrganizationId string `json:"organizationId" binding:"uuid"`
 }
 
 func (e *Employee) toService() *service.Employee {
+	spi := make([]*service.EmployeeBankInfo, 0, len(e.EmployeeBankInfos))
+	for _, v := range e.EmployeeBankInfos {
+		spi = append(spi, &service.EmployeeBankInfo{
+			EmployeeId  : e.Id,
+			BankId    : v.BankId,
+			CardNumber  : v.CardNumber,
+			OrganizationId : v.OrganizationId,
+		})
+	}
+
 	return &service.Employee{
 		Id:         e.Id,
 		Name:       e.Name,
@@ -62,6 +72,7 @@ func (e *Employee) toService() *service.Employee {
 		Status:     e.Status,
 		BaseSalary: e.BaseSalary,
 		Identity:   e.Identity,
+		EmployeeBankInfos: spi,
 	}
 }
 
@@ -81,9 +92,9 @@ func (e *Employee) fromService(se *service.Employee) {
 	e.BaseSalary = se.BaseSalary
 	e.Identity = se.Identity
 
-	if se.PayrollInfos != nil {
-		for _, v := range se.PayrollInfos {
-			e.PayrollInfos = append(e.PayrollInfos, &PayrollInfo{
+	if se.EmployeeBankInfos != nil {
+		for _, v := range se.EmployeeBankInfos {
+			e.EmployeeBankInfos = append(e.EmployeeBankInfos, &EmployeeBankInfo{
 				Id:             v.Id,
 				//EmployeeId:     v.EmployeeId,
 				BankId:         v.BankId,

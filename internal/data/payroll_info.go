@@ -8,7 +8,7 @@ import (
 	"xorm.io/xorm"
 )
 
-type PayrollInfo struct {
+type EmployeeBankInfo struct {
 	Id             string `xorm:"varchar(36) pk"`
 	EmployeeId     string `xorm:"varchar(36) notnull"`
 	BankId         string `xorm:"varchar(36) notnull"`
@@ -16,8 +16,8 @@ type PayrollInfo struct {
 	OrganizationId string `xorm:"varchar(36) notnull"`
 }
 
-func (pi *PayrollInfo) toService() *service.PayrollInfo {
-	return &service.PayrollInfo{
+func (pi *EmployeeBankInfo) toService() *service.EmployeeBankInfo {
+	return &service.EmployeeBankInfo{
 		Id:             pi.Id,
 		EmployeeId:     pi.EmployeeId,
 		BankId:         pi.BankId,
@@ -26,7 +26,7 @@ func (pi *PayrollInfo) toService() *service.PayrollInfo {
 	}
 }
 
-func (pi *PayrollInfo) fromService(spi *service.PayrollInfo) {
+func (pi *EmployeeBankInfo) fromService(spi *service.EmployeeBankInfo) {
 	pi.Id = spi.Id
 	pi.EmployeeId = spi.EmployeeId
 	pi.BankId = spi.BankId
@@ -34,11 +34,11 @@ func (pi *PayrollInfo) fromService(spi *service.PayrollInfo) {
 	pi.OrganizationId = spi.OrganizationId
 }
 
-func (pi *PayrollInfo) list(ctx context.Context, session *xorm.Session, logger *logger.Logger, employeeId string) ([]*PayrollInfo, error) {
+func (pi *EmployeeBankInfo) list(ctx context.Context, session *xorm.Session, logger *logger.Logger, employeeId string) ([]*EmployeeBankInfo, error) {
 	log := logger.WithRequestId(ctx)
-	log.Infof("PayrollInfo list input employee_id = %s\n", employeeId)
+	log.Infof("EmployeeBankInfo list input employee_id = %s\n", employeeId)
 
-	infos := make([]*PayrollInfo, 0)
+	infos := make([]*EmployeeBankInfo, 0)
 	err := session.Where("employee_id = ?", employeeId).Find(&infos)
 	if err != nil {
 		return nil, errors.ErrDataGet(err.Error())
@@ -47,24 +47,24 @@ func (pi *PayrollInfo) list(ctx context.Context, session *xorm.Session, logger *
 	return infos, nil
 }
 
-func (pi *PayrollInfo) insertList(ctx context.Context, session *xorm.Session, logger *logger.Logger, data []*PayrollInfo) error {
+func (pi *EmployeeBankInfo) insertList(ctx context.Context, session *xorm.Session, logger *logger.Logger, data []*EmployeeBankInfo) error {
 	log := logger.WithRequestId(ctx)
-	log.Infof("PayrollInfo insertList input \n")
+	log.Infof("EmployeeBankInfo insertList input \n")
 
 	_, err := session.Insert(&data)
 	if err != nil {
-		log.Error("PayrollInfo insertList error: ", err.Error())
+		log.Error("EmployeeBankInfo insertList error: ", err.Error())
 		return errors.ErrDataInsert(err.Error())
 	}
 
 	return nil
 }
 
-func (pi *PayrollInfo) deleteByEmployeeId(ctx context.Context, session *xorm.Session, logger *logger.Logger, empId string) error {
+func (pi *EmployeeBankInfo) deleteByEmployeeId(ctx context.Context, session *xorm.Session, logger *logger.Logger, empId string) error {
 	log := logger.WithRequestId(ctx)
 	log.Infof("deleteByEmployeeId input empId = %s\n", empId)
 
-	payInfo := &PayrollInfo{}
+	payInfo := &EmployeeBankInfo{}
 	_, err := session.Where("employee_id = ?", empId).Delete(payInfo)
 	if err != nil {
 		log.Error("deleteByEmployeeId error: ", err.Error())
@@ -74,11 +74,11 @@ func (pi *PayrollInfo) deleteByEmployeeId(ctx context.Context, session *xorm.Ses
 	return nil
 }
 
-func (pi *PayrollInfo) listByOrgId(ctx context.Context, session *xorm.Session, logger *logger.Logger, organizationId string) ([]*PayrollInfo, error) {
+func (pi *EmployeeBankInfo) listByOrgId(ctx context.Context, session *xorm.Session, logger *logger.Logger, organizationId string) ([]*EmployeeBankInfo, error) {
 	log := logger.WithRequestId(ctx)
-	log.Infof("PayrollInfo list input employee_id = %s\n", organizationId)
+	log.Infof("EmployeeBankInfo list input employee_id = %s\n", organizationId)
 
-	infos := make([]*PayrollInfo, 0)
+	infos := make([]*EmployeeBankInfo, 0)
 	err := session.Where("organization_id = ?", organizationId).Find(&infos)
 	if err != nil {
 		return nil, errors.ErrDataGet(err.Error())

@@ -41,18 +41,36 @@ func (er *EmployeeRepo) AddEmployee(ctx context.Context, se *service.Employee) e
 		return err
 	}
 
+	bankIds := make([]string, 0, len(se.EmployeeBankInfos))
+	orgIds := make([]string, 0, len(se.EmployeeBankInfos))
 	// 添加银行卡信息
-	payInfos := make([]*PayrollInfo, 0, len(se.PayrollInfos))
-	for _, spi := range se.PayrollInfos {
+	bankInfos := make([]*EmployeeBankInfo, 0, len(se.EmployeeBankInfos))
+	for _, spi := range se.EmployeeBankInfos {
+		bankInfo := &EmployeeBankInfo{}
+		bankInfo.fromService(spi)
+		bankInfo.Id = uuid.CreateUUID()
 
-		payInfo := &PayrollInfo{}
-		payInfo.fromService(spi)
-		payInfo.Id = uuid.CreateUUID()
-		payInfos = append(payInfos, payInfo)
+		bankInfos = append(bankInfos, bankInfo)
+		bankIds = append(bankIds, bankInfo.BankId)
+		orgIds = append(orgIds, bankInfo.OrganizationId)
 	}
 
-	payrollInfo := &PayrollInfo{}
-	err = payrollInfo.insertList(ctx, session, er.logger, payInfos)
+	// 检查 BankId 是否存在
+	bank := &Bank{}
+	exist, err := bank.existByIds(ctx, session, er.logger, bankIds)
+	if err != nil {
+		_ = session.Rollback()
+		return err
+	}
+	if !exist {
+		return errors.DataNotFound("bankId 不存在")
+	}
+
+
+	// 检查 OrganizationId 是否存在
+
+	employeeBankInfo := &EmployeeBankInfo{}
+	err = employeeBankInfo.insertList(ctx, session, er.logger, bankInfos)
 	if err != nil {
 		_ = session.Rollback()
 		return err
@@ -115,18 +133,18 @@ func (er *EmployeeRepo) UpdateEmployee(ctx context.Context, se *service.Employee
 		return err
 	}
 
-	// 删除 payrollInfo
-	pi := &PayrollInfo{}
+	// 删除 EmployeeBankInfo
+	pi := &EmployeeBankInfo{}
 	err = pi.deleteByEmployeeId(ctx, session, er.logger, se.Id)
 	if err != nil {
 		_ = session.Rollback()
 		return err
 	}
 
-	// 插入 payrollInfo
-	pis := make([]*PayrollInfo, 0, len(se.PayrollInfos))
-	for _, v := range se.PayrollInfos {
-		pi := &PayrollInfo{}
+	// 插入 EmployeeBankInfo
+	pis := make([]*EmployeeBankInfo, 0, len(se.EmployeeBankInfos))
+	for _, v := range se.EmployeeBankInfos {
+		pi := &EmployeeBankInfo{}
 		pi.fromService(v)
 		pi.Id = uuid.CreateUUID()
 
@@ -158,7 +176,7 @@ func (er *EmployeeRepo) DeleteEmployee(ctx context.Context, id string) error {
 	}
 
 	// 删银行卡信息
-	pi := &PayrollInfo{}
+	pi := &EmployeeBankInfo{}
 	err = pi.deleteByEmployeeId(ctx, session, er.logger, id)
 	if err != nil {
 		_ = session.Rollback()
@@ -170,7 +188,7 @@ func (er *EmployeeRepo) DeleteEmployee(ctx context.Context, id string) error {
 }
 
 type Employee struct {
-	Id         string    `xorm:"id varchar(36) notnull"`
+	Id         string    `xorm:"id varchar(36) pk"`
 	IdCard     string    `xorm:"id_card varchar(18) notnull "` // 身份证号
 	Telephone  string    `xorm:"telephone varchar(11)"`
 	OfferTime  time.Time `xorm:"offer_time"`         // 入职日期

@@ -32,10 +32,10 @@ type Employee struct {
 	Status       int32 // 状态 1: 在职、2: 离职 3: 退休
 	BaseSalary   int32 // 基本工资
 	Identity     int32 // 身份类别： 1:公务员、 2: 事业、3: 企业
-	PayrollInfos []*PayrollInfo
+	EmployeeBankInfos []*EmployeeBankInfo
 }
 
-type PayrollInfo struct {
+type EmployeeBankInfo struct {
 	Id             string `json:"id"`
 	EmployeeId     string `json:"employeeId"`
 	BankId         string `json:"bankId"`
