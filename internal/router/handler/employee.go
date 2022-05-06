@@ -23,8 +23,8 @@ func NewEmployeeHandler(emp *service.EmployeeService, logger *logger.Logger) *Em
 
 type Employee struct {
 	Id           string         `json:"id" binding:"omitempty,uuid"`
-	Name         string         `json:"name" binding:"required,lte=20"`   // 姓名
-	IdCard       string         `json:"idCard" binding:"required,len=18"` // 身份证号码
+	Name         string         `json:"name" binding:"lte=20"`   // 姓名
+	IdCard       string         `json:"idCard" binding:"len=18"` // 身份证号码
 	Telephone    string         `json:"telephone"`                 // 手机号码
 	Duty         string         `json:"duty"`                      // 职务
 	Post         string         `json:"post"`                      // 岗位

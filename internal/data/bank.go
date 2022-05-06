@@ -102,7 +102,7 @@ func (b *Bank) listAll(ctx context.Context, session *xorm.Session, logger *logge
 	log.Infof("Bank list \n")
 
 	bs := make([]*Bank, 0)
-	err := session.Find(&bs)
+	err := session.Table(&Bank{}).Find(&bs)
 	if err != nil {
 		log.Errorf("Bank get error %s\n", err.Error())
 		return nil, errors.ErrDataGet(err.Error())
@@ -115,7 +115,7 @@ func (b *Bank) listByIds(ctx context.Context, session *xorm.Session, logger *log
 	log.Infof("Bank list \n")
 
 	bs := make([]*Bank, 0)
-	err := session.In("id", ids).Find(&bs)
+	err := session.Table(&Bank{}).In("id", ids).Find(&bs)
 	if err != nil {
 		log.Errorf("Bank get error %s\n", err.Error())
 		return nil, errors.ErrDataGet(err.Error())
@@ -125,15 +125,18 @@ func (b *Bank) listByIds(ctx context.Context, session *xorm.Session, logger *log
 
 func (b *Bank) existByIds(ctx context.Context, session *xorm.Session, logger *logger.Logger, ids []string) (bool, error) {
 	log := logger.WithRequestId(ctx)
-	log.Infof("Bank list \n")
+	log.Infof("Bank existByIds: %+v", ids)
 
-	bs := make([]*Bank, 0)
-	has, err := session.In("id", ids).Exist(&bs)
+	banks, err:= b.listByIds(ctx, session, logger , ids)
 	if err != nil {
-		log.Errorf("Bank get error %s\n", err.Error())
-		return false, errors.ErrDataGet(err.Error())
+		return false, err
 	}
-	return has, nil
+
+	if len(ids) != len(banks) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (b *Bank) update(ctx context.Context, session *xorm.Session, logger *logger.Logger) error {

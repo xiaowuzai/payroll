@@ -219,7 +219,7 @@ var banks = []string {
 	"南京银行",
 	"农业银行",
 }
-func (*InitData)initBank(session *xorm.Session) error{
+func (initData *InitData)initBank(session *xorm.Session) error{
 	bs := make([]*Bank, 0, len(banks))
 	for _, name := range banks {
 		bs = append(bs, &Bank{

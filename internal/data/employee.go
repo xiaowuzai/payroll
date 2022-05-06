@@ -41,6 +41,11 @@ func (er *EmployeeRepo) AddEmployee(ctx context.Context, se *service.Employee) e
 		return err
 	}
 
+	if len(se.EmployeeBankInfos) == 0 {
+		_ = session.Commit()
+		return nil
+	}
+
 	bankIds := make([]string, 0, len(se.EmployeeBankInfos))
 	orgIds := make([]string, 0, len(se.EmployeeBankInfos))
 	// 添加银行卡信息
@@ -66,8 +71,16 @@ func (er *EmployeeRepo) AddEmployee(ctx context.Context, se *service.Employee) e
 		return errors.DataNotFound("bankId 不存在")
 	}
 
-
 	// 检查 OrganizationId 是否存在
+	org := &Organization{}
+	exist, err = org.existByIds(ctx, session, er.logger, orgIds)
+	if err != nil {
+		_ = session.Rollback()
+		return err
+	}
+	if !exist {
+		return errors.DataNotFound("OrganizationId 不存在")
+	}
 
 	employeeBankInfo := &EmployeeBankInfo{}
 	err = employeeBankInfo.insertList(ctx, session, er.logger, bankInfos)
@@ -189,23 +202,27 @@ func (er *EmployeeRepo) DeleteEmployee(ctx context.Context, id string) error {
 
 type Employee struct {
 	Id         string    `xorm:"id varchar(36) pk"`
-	IdCard     string    `xorm:"id_card varchar(18) notnull "` // 身份证号
-	Telephone  string    `xorm:"telephone varchar(11)"`
+	Name string `xorm:"name varchar(20) notnull"`
+	IdCard     string    `xorm:"id_card varchar(18) notnull unique"` // 身份证号
+	Telephone  string    `xorm:"telephone varchar(11) unique"`
 	OfferTime  time.Time `xorm:"offer_time"`         // 入职日期
 	RetireTime time.Time `xorm:"retire_time"`        // 退休日期
+	Created time.Time `xorm:"created"`  // 创建时间
 	Duty       string    `xorm:"duty varchar(32)"`   // 职务
 	Post       string    `xorm:"post  varchar(32)"`  // 岗位
 	Level      string    `xorm:"level  varchar(32)"` // 级别
 	Number     int       `xorm:"number int notnull"` // 编号
 	BaseSalary int32     `xorm:"base_salary"`        // 基本工资
-	Identity   int32     `xorm:"identity"`           // 身份类型： 0:公务员、 1: 事业、2: 企业
+	Identity   int32     `xorm:"identity"`           // 身份类型： 1:公务员、 2: 事业、3: 企业
 	Sex        int32     `xorm:"sex"`
 	Status     int32     `xorm:"status"`
+
 }
 
 func (e *Employee) toService() *service.Employee {
 	return &service.Employee{
 		Id:         e.Id,
+		Name: e.Name,
 		Number:     e.Number,
 		IdCard:     e.IdCard,
 		Telephone:  e.Telephone,
@@ -223,6 +240,7 @@ func (e *Employee) toService() *service.Employee {
 
 func (e *Employee) fromService(s *service.Employee) {
 	e.Id = s.Id
+	e.Name = s.Name
 	e.Number = s.Number
 	e.IdCard = s.IdCard
 	e.Telephone = s.Telephone
@@ -293,12 +311,12 @@ func (e *Employee) list(ctx context.Context, session *xorm.Session, logger *logg
 
 	es := make([]*Employee, 0)
 	if name != "" {
-		session = session.Where("name = ?", name)
+		session = session.Where("name like ?", "%"+name+"%")
 	}
 	if organizationId != "" {
 		session = session.Where("organizationId = ?", organizationId)
 	}
-	err := session.Find(&es)
+	err := session.OrderBy("created").Desc().Find(&es)
 	if err != nil {
 		log.Error("Employee list error: ", err.Error())
 		return nil, errors.ErrDataGet(err.Error())

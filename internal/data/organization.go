@@ -256,6 +256,52 @@ func (or *organizationRepo) DeleteOrganization(ctx context.Context, id string) e
 	return nil
 }
 
+func (org *Organization) list(ctx context.Context, session *xorm.Session, logger *logger.Logger) ([]*Organization, error) {
+	log := logger.WithRequestId(ctx)
+	log.Infof("Organization list")
+
+	orgs := make([]*Organization, 0)
+	err := session.Find(orgs)
+	if err != nil {
+		log.Errorf("Organization list error: %s\n", err.Error())
+		return nil, errors.ErrDataGet(err.Error())
+	}
+
+	return orgs, nil
+}
+
+func (org *Organization) listByIds(ctx context.Context, session *xorm.Session, logger *logger.Logger, ids []string) ([]*Organization, error) {
+	log := logger.WithRequestId(ctx)
+	log.Info("Organization listByIds")
+
+	orgs := make([]*Organization, 0)
+	err := session.In("id", ids).Find(&orgs)
+	if err != nil {
+		log.Errorf("Organization list error: %s\n", err.Error())
+		return nil, errors.ErrDataGet(err.Error())
+	}
+
+	return orgs, nil
+}
+
+func (org *Organization) existByIds(ctx context.Context, session *xorm.Session, logger *logger.Logger, ids []string) (bool, error) {
+	log := logger.WithRequestId(ctx)
+	log.Info("Organization existByIds")
+
+	orgs, err := org.listByIds(ctx, session, logger, ids)
+	if err != nil {
+		return false, err
+	}
+
+	if len(ids) != len(orgs) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+
+
 func (org *Organization) get(ctx context.Context, session *xorm.Session, logger *logger.Logger) (bool, error) {
 	log := logger.WithRequestId(ctx)
 	log.Infof("Organization get input %+v\n", *org)
